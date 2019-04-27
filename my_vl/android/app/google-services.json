@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "198651969104",
+    "firebase_url": "https://isn-matt-and-jo.firebaseio.com",
+    "project_id": "isn-matt-and-jo",
+    "storage_bucket": "isn-matt-and-jo.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:198651969104:android:2d4db1d8437645eb",
+        "android_client_info": {
+          "package_name": "com.example.my_vl"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "198651969104-g5lflu8t7e1q9m00c4263lrdh62k415t.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.my_vl",
+            "certificate_hash": "5bcdbd91b146a930a51be96781ef2831652390bf"
+          }
+        },
+        {
+          "client_id": "198651969104-32njpgc1qphpkoh233idnc0s6j21u35d.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAbRwXhzQ-WiOOX-9eRNdDadeiStCWnzoU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "198651969104-32njpgc1qphpkoh233idnc0s6j21u35d.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
