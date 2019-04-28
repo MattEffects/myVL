@@ -1,6 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
+import 'src/app.dart';
 
-void main() => runApp(MyApp());
+void main() {
+  SystemChrome.setEnabledSystemUIOverlays([]);
+  debugPaintSizeEnabled = false;
+  runApp(App());
+}
 
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
