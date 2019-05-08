@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:ui';
 
 // Création de l'écran de bienvenue
@@ -89,7 +89,7 @@ class _HelloScreenState extends State<HelloScreen>
             ),
           ),
           // Affiche le bouton d'inscription
-          _signUpButton(),
+          _startButton(),
         ],
       ),
     );
@@ -178,25 +178,27 @@ class _HelloScreenState extends State<HelloScreen>
     );
   }
 
-  Widget _signUpButton() {
+  Widget _startButton() {
     return AnimatedBuilder(
-        animation: buttonAnimation,
-        builder: (context, child) {
-          return Positioned(
-            bottom: buttonAnimation.value,
-            child: Container(
-              width: MediaQuery.of(context).size.width,
-              alignment: Alignment.center,
-              child: FlatButton.icon(
-                icon: Icon(Icons.person),
-                label: Text('S\'inscrire'),
-                textColor: Colors.white,
-                onPressed: () => Navigator.pushNamed(context, '/signup'),
-              ),
+      animation: buttonAnimation,
+      builder: (context, child) {
+        return Positioned(
+          bottom: buttonAnimation.value,
+          child: Container(
+            width: MediaQuery.of(context).size.width,
+            alignment: Alignment.center,
+            child: FlatButton.icon(
+              icon: Icon(Icons.person),
+              label: Text('S\'inscrire'),
+              textColor: Colors.white,
+              onPressed: () => Navigator.pushNamed(context, '/auth'),
             ),
-          );
-        });
+          ),
+        );
+      }
+    );
   }
+
 
   onTap() {
     if (welcomeMode || !welcomeMode) {

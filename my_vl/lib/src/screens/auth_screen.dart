@@ -2,18 +2,18 @@ import 'package:flutter/material.dart';
 import '../blocs/auth_bloc.dart';
 import '../blocs/auth_provider.dart';
 
-class SignUpScreen extends StatelessWidget {
+class AuthScreen extends StatelessWidget {
   Widget build(context) {
-    final _bloc = AuthProvider.of(context);
+    final AuthBloc _bloc = AuthProvider.of(context).bloc;
     return Scaffold(
       appBar: AppBar(
         title: Text('Rejoindre MyVL'),
       ),
-      body: _showBody(_bloc),
+      body: _showBody(context, _bloc),
     );
   }
 
-  Widget _showBody(AuthBloc bloc) {
+  Widget _showBody(BuildContext context, AuthBloc bloc) {
     return Center(
       child: Container(
           padding: EdgeInsets.all(30.0),
@@ -21,15 +21,15 @@ class SignUpScreen extends StatelessWidget {
             child: Column(
               children: <Widget>[
                 _showLogo(),
-                SizedBox(height: 10),
+                SizedBox(height: 20),
                 _errorMessage(bloc),
-                SizedBox(height: 10),
+                SizedBox(height: 20),
                 _emailField(bloc),
                 SizedBox(height: 15),
                 _passwordField(bloc),
                 _confirmPasswordField(bloc),
                 SizedBox(height: 45),
-                _submitButton(bloc),
+                _tempoButton(context),
               ],
             ),
           )),
@@ -67,6 +67,7 @@ class SignUpScreen extends StatelessWidget {
     return StreamBuilder(
       // Chaque fois qu'un nouvel évènement passe dans le Stream...
       stream: bloc.email,
+      initialData: '',
       // ... le builder est relancé et retourne un nouveau TextField
       // Snapshot contient la donnée qui vient de passer dans le Stream
       builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
@@ -83,7 +84,7 @@ class SignUpScreen extends StatelessWidget {
               Icons.email,
               color: Colors.grey,
             ),
-            labelText: 'Email',
+            labelText: 'Email ${snapshot.data}',
             errorText: snapshot.error,
           ),
         );
@@ -128,7 +129,7 @@ class SignUpScreen extends StatelessWidget {
                       : Icon(Icons.visibility_off, color: Colors.grey),
                   onPressed: () => bloc.toggle(!snapshotVisibility.data),
                 ),
-                labelText: 'Mot de passe',
+                labelText: 'Mot de passe ${snapshotInput.data}',
                 helperText: '8-24 caractères, majuscules et minuscules',
                 errorText: snapshotInput.error,
               ),
@@ -154,19 +155,31 @@ class SignUpScreen extends StatelessWidget {
                 Icons.verified_user,
                 color: Colors.grey,
               ),
-              labelText: 'Confirmer le mot de passe',
+              labelText: 'Confirmer le mot de passe ${snapshot.data}',
             ),
           );
         });
   }
-
+  Widget _tempoButton(context) {
+    return FlatButton.icon(
+            icon: Icon(Icons.person),
+            label: Text('Activités'),
+            textColor: Colors.white,
+            color: Colors.blue,
+            highlightColor: Colors.blue[400],
+            disabledColor: Colors.grey[200],
+            onPressed: () {
+              Navigator.pushNamed(context, '/activity');
+            },
+          );
+  }
   Widget _submitButton(AuthBloc bloc) {
     return StreamBuilder(
         stream: bloc.submitValid,
         builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
           return FlatButton.icon(
             icon: Icon(Icons.person),
-            label: Text('S\'inscrire'),
+            label: Text('S\'inscrire ${snapshot.data}'),
             textColor: Colors.white,
             color: Colors.blue,
             highlightColor: Colors.blue[400],

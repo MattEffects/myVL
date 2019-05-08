@@ -2,7 +2,7 @@ import 'dart:async';
 import '../mixins/validators.dart';
 import 'package:rxdart/rxdart.dart';
 
-class AuthBloc with Validators{
+class AuthBloc extends Object with Validators{
   // Déclaration des StreamControllers nécessaires
   final _email = BehaviorSubject<String>();
   final _password = BehaviorSubject<String>();
@@ -13,11 +13,9 @@ class AuthBloc with Validators{
   // Getters de lecture des données des streams
   Stream<String> get email => _email.stream.transform(validateEmail);
   Stream<String> get password => _password.stream.transform(validatePassword);
-  Stream<String> get confirmPassword => _confirmPassword.stream.transform(validateConfirm);
+  Stream<String> get confirmPassword => _confirmPassword.stream.transform(validatePassword);
   Stream<bool> get submitValid =>
-    Observable.combineLatest3(email, password, confirmPassword, (e, p, c) {
-      return (c == p);
-    });
+    Observable.combineLatest3(email, password, confirmPassword, (e, p, c) => (p == c));
   Stream<bool> get obscureText => _obscureText.stream;
   Stream<String> get error => _error.stream;
 
@@ -49,3 +47,5 @@ class AuthBloc with Validators{
     _error.close();
   }
 }
+
+final bloc = AuthBloc();

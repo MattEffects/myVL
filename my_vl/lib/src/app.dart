@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'screens/hello_screen.dart';
-import 'screens/signup_screen.dart';
+import 'screens/auth_screen.dart';
+import 'screens/activity_screen.dart';
+import 'screens/restauration_screen.dart';
+import 'screens/settings_screen.dart';
 import 'blocs/auth_provider.dart';
 
 class App extends StatelessWidget {
@@ -14,9 +17,21 @@ class App extends StatelessWidget {
           '/': (BuildContext context) {
             return HelloScreen();
           },
-          '/signup': (BuildContext context) {
+          '/auth': (BuildContext context) {
             // SystemChrome.setEnabledSystemUIOverlays([SystemUiOverlay.bottom]);
-            return SignUpScreen();
+            return AuthScreen();
+            //AuthProvider(
+            //  child: SignUpScreen(),
+            //);
+          },
+          '/activity': (BuildContext context) {
+            return ActivityScreen();
+          },
+          '/restauration': (BuildContext context) {
+            return RestaurationScreen();
+          },
+          '/settings': (BuildContext context) {
+            return SettingsScreen();
           },
         },
       ),

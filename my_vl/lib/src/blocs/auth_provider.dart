@@ -9,8 +9,8 @@ class AuthProvider extends InheritedWidget {
   @override
   bool updateShouldNotify(_) => true;
 
-  static AuthBloc of(BuildContext context) {
-    return (context.inheritFromWidgetOfExactType(AuthProvider) as AuthProvider).bloc;
+  static AuthProvider of(BuildContext context) {
+    return (context.inheritFromWidgetOfExactType(AuthProvider) as AuthProvider);
   }
 
   // La fonction of est une fonction statique qui renvoie un objet de type AuthBloc
