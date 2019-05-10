@@ -11,9 +11,9 @@ class AuthBloc extends Object with Validators{
   final _error = BehaviorSubject<String>();
 
   // Getters de lecture des données des streams
-  Stream<String> get email => _email.stream.transform(validateEmail);
-  Stream<String> get password => _password.stream.transform(validatePassword);
-  Stream<String> get confirmPassword => _confirmPassword.stream.transform(validatePassword);
+  Stream<String> get email => _email.stream;
+  Stream<String> get password => _password.stream;
+  Stream<String> get confirmPassword => _confirmPassword.stream;
   Stream<bool> get submitValid =>
     Observable.combineLatest3(email, password, confirmPassword, (e, p, c) => (p == c));
   Stream<bool> get obscureText => _obscureText.stream;

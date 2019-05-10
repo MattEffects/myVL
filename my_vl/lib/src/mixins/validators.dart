@@ -1,54 +1,26 @@
-import 'dart:async';
-
 class Validators {
 
-  // Email validator
-  final validateEmail = StreamTransformer<String, String>.fromHandlers(
-    handleData: (email, sink) {
-      if (email.contains('@') && email.contains('.')) {
-        sink.add(email);
-      }
-      else {
-        sink.addError('Merci de renseigner un email valide');
-      }
+  String validateEmail (String value) {
+    // Return null if valid
+    // Otherwise string (with error message) if invalid
+    if (!((value.contains('@')) && (value.contains('.')))) {
+      return 'Merci de renseigner un email valide';
     }
-  );
+    return null;
+  }
 
-  // Password validator
-  final validatePassword = StreamTransformer<String, String>.fromHandlers(
-    handleData: (password, sink) {
-      if (
-        (password.contains(RegExp(r'[A-Z]')) && password.contains(RegExp(r'[a-z]')))
-        &&
-        (password.length > 8 && password.length < 24)
-        ) {
-        sink.add(password);
-      }
-      else {
-        sink.addError('Le mot de passe doit contenir A,a et doit être de 8-24 caractères');
-      }
+  String validatePassword (String value) {
+    if (value.length == 0 || value == null) {
+      return 'Merci de renseigner un mot de passe';
     }
-  );
+    if (
+      (value.length < 8 && value.length > 24)
+      ||
+      !(value.contains(RegExp(r'[A-Z]')) && value.contains(RegExp(r'[a-z]')))
+    ) {
+      return '8-24 caractères, majuscules et minuscules';
+    }
+    return null;
+  }
 
-  final validateConfirm = StreamTransformer<String, String>.fromHandlers(
-    handleData: (confirmPassword, sink) {
-      if (confirmPassword.length > 0) {
-        sink.add(confirmPassword);
-      }
-      else {
-        sink.addError('Les mots de passe ne correspondent pas');
-      }
-    }
-  );
-
-  final validateSame = StreamTransformer<dynamic, bool>.fromHandlers(
-    handleData: (same, sink) {
-      if (same) {
-        sink.add(same);
-      }
-      else {
-        sink.addError('Les mots de passe ne correspondent pas');
-      }
-    }
-  );
 }

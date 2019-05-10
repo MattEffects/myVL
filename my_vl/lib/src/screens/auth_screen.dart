@@ -1,13 +1,34 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
+import 'dart:async';
+import '../mixins/validators.dart';
 import '../blocs/auth_bloc.dart';
 import '../blocs/auth_provider.dart';
 
-class AuthScreen extends StatelessWidget {
+enum FormMode { LOGIN, SIGNUP }
+
+class AuthScreen extends StatefulWidget {
+  @override
+  _AuthScreenState createState() => _AuthScreenState();
+}
+
+class _AuthScreenState extends State<AuthScreen> with Validators{
+  
+  FormMode _formMode = FormMode.SIGNUP;
+  bool _isLoading = false;
+  bool _autovalidate = false;
+  bool _obscure = true;
+  var _formKey = GlobalKey<FormState>();
+  String _email = '';
+  String _password = '';
+  String _confirmedPassword = '';
+  String _errorMessage = '';
+
   Widget build(context) {
     final AuthBloc _bloc = AuthProvider.of(context).bloc;
     return Scaffold(
       appBar: AppBar(
-        title: Text('Rejoindre MyVL'),
+        title: _formMode == FormMode.SIGNUP ? Text('Rejoindre MyVL') : Text('Se connecter'),
       ),
       body: _showBody(context, _bloc),
     );
@@ -15,21 +36,25 @@ class AuthScreen extends StatelessWidget {
 
   Widget _showBody(BuildContext context, AuthBloc bloc) {
     return Center(
-      child: Container(
+      child: SingleChildScrollView(
           padding: EdgeInsets.all(30.0),
-          child: SingleChildScrollView(
+          child: Form(
+            key: _formKey,
             child: Column(
+              mainAxisSize: MainAxisSize.max,
               children: <Widget>[
                 _showLogo(),
                 SizedBox(height: 20),
-                _errorMessage(bloc),
+                _showErrorMessage(_errorMessage),
                 SizedBox(height: 20),
-                _emailField(bloc),
+                _emailField(),
                 SizedBox(height: 15),
-                _passwordField(bloc),
-                _confirmPasswordField(bloc),
+                _passwordField(),
+                _formMode == FormMode.SIGNUP ? _confirmPasswordField() : SizedBox(),
                 SizedBox(height: 45),
-                _tempoButton(context),
+                _submitButton(),
+                SizedBox(height: 20),
+                _switchButton(),
               ],
             ),
           )),
@@ -63,32 +88,22 @@ class AuthScreen extends StatelessWidget {
     );
   }
 
-  Widget _emailField(AuthBloc bloc) {
-    return StreamBuilder(
-      // Chaque fois qu'un nouvel évènement passe dans le Stream...
-      stream: bloc.email,
-      initialData: '',
-      // ... le builder est relancé et retourne un nouveau TextField
-      // Snapshot contient la donnée qui vient de passer dans le Stream
-      builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
-        return TextField(
-          // Lie l'entrée de texte au email.sink.add()
-          // Chaque nouveau caractère saisi est envoyé au email stream via sink.add()
-          onChanged: bloc.changeEmail,
-          maxLines: 1,
-          autofocus: false,
-          autocorrect: false,
-          keyboardType: TextInputType.emailAddress,
-          decoration: InputDecoration(
-            icon: Icon(
-              Icons.email,
-              color: Colors.grey,
-            ),
-            labelText: 'Email ${snapshot.data}',
-            errorText: snapshot.error,
-          ),
-        );
-      },
+  Widget _emailField() {
+    return TextFormField(
+      maxLines: 1,
+      autofocus: false,
+      autocorrect: false,
+      autovalidate: _autovalidate,
+      validator: validateEmail,
+      keyboardType: TextInputType.emailAddress,
+      decoration: InputDecoration(
+        icon: Icon(
+          Icons.email,
+          color: Colors.grey,
+        ),
+        labelText: 'Email',
+      ),
+      onSaved: (value) => _email = value,
     );
 
     // Déroulement complet :
@@ -103,112 +118,162 @@ class AuthScreen extends StatelessWidget {
     // 9. errorText affiche la valeur 'error' du snapshot (nulle si entrée validée)
   }
 
-  Widget _passwordField(AuthBloc bloc) {
-    return StreamBuilder(
-      stream: bloc.password,
-      builder: (BuildContext context, AsyncSnapshot<String> snapshotInput) {
-        return StreamBuilder(
-          stream: bloc.obscureText,
-          initialData: true,
-          builder:
-              (BuildContext context, AsyncSnapshot<bool> snapshotVisibility) {
-            return TextField(
-              onChanged: bloc.changePassword,
-              maxLines: 1,
-              autofocus: false,
-              autocorrect: false,
-              obscureText: snapshotVisibility.data,
-              decoration: InputDecoration(
-                icon: Icon(
-                  Icons.lock,
-                  color: Colors.grey,
-                ),
-                suffixIcon: IconButton(
-                  icon: (snapshotVisibility.data)
-                      ? Icon(Icons.visibility, color: Colors.grey)
-                      : Icon(Icons.visibility_off, color: Colors.grey),
-                  onPressed: () => bloc.toggle(!snapshotVisibility.data),
-                ),
-                labelText: 'Mot de passe ${snapshotInput.data}',
-                helperText: '8-24 caractères, majuscules et minuscules',
-                errorText: snapshotInput.error,
-              ),
-            );
-          },
-        );
-      },
+  Widget _passwordField() {
+    return TextFormField(
+      maxLines: 1,
+      autofocus: false,
+      autocorrect: false,
+      obscureText: _obscure,
+      autovalidate: _autovalidate,
+      validator: validatePassword,
+      decoration: InputDecoration(
+        icon: Icon(
+          Icons.lock,
+          color: Colors.grey,
+        ),
+        suffixIcon: IconButton(
+          icon: (_obscure)
+              ? Icon(Icons.visibility_off, color: Colors.grey)
+              : Icon(Icons.visibility, color: Colors.grey),
+          onPressed: () => setState(() => _obscure = !_obscure),
+        ),
+        labelText: 'Mot de passe',
+        helperText: '8-24 caractères, majuscules et minuscules',
+      ),
+      onSaved: (value) => _password = value,
     );
   }
 
-  Widget _confirmPasswordField(AuthBloc bloc) {
-    return StreamBuilder(
-        stream: bloc.confirmPassword,
-        builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
-          return TextField(
-            onChanged: bloc.changeConfirmPassword,
-            maxLines: 1,
-            autofocus: false,
-            autocorrect: false,
-            obscureText: false,
-            decoration: InputDecoration(
-              icon: Icon(
-                Icons.verified_user,
-                color: Colors.grey,
-              ),
-              labelText: 'Confirmer le mot de passe ${snapshot.data}',
-            ),
-          );
-        });
+  Widget _confirmPasswordField() {
+    return TextFormField(
+      maxLines: 1,
+      autofocus: false,
+      autocorrect: false,
+      obscureText: true,
+      decoration: InputDecoration(
+        icon: Icon(
+          Icons.verified_user,
+          color: Colors.grey,
+        ),
+        labelText: 'Confirmer le mot de passe',
+      ),
+      onSaved: (value) => _confirmedPassword = value,
+    );
   }
+
   Widget _tempoButton(context) {
     return FlatButton.icon(
-            icon: Icon(Icons.person),
-            label: Text('Activités'),
-            textColor: Colors.white,
-            color: Colors.blue,
-            highlightColor: Colors.blue[400],
-            disabledColor: Colors.grey[200],
-            onPressed: () {
-              Navigator.pushNamed(context, '/activity');
-            },
-          );
-  }
-  Widget _submitButton(AuthBloc bloc) {
-    return StreamBuilder(
-        stream: bloc.submitValid,
-        builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
-          return FlatButton.icon(
-            icon: Icon(Icons.person),
-            label: Text('S\'inscrire ${snapshot.data}'),
-            textColor: Colors.white,
-            color: Colors.blue,
-            highlightColor: Colors.blue[400],
-            disabledColor: Colors.grey[200],
-            onPressed: (snapshot.hasData && snapshot.data) ? bloc.submit : null,
-          );
-        });
-  }
-
-  Widget _errorMessage(AuthBloc bloc) {
-    return StreamBuilder(
-      stream: bloc.submitValid,
-      builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
-        if (snapshot.hasData && !snapshot.data) {
-          return Text(
-            'Les mots de passe ne correspondent pas',
-            style: TextStyle(
-              fontSize: 13.0,
-              color: Colors.red,
-              height: 1.0,
-              fontWeight: FontWeight.w300,
-            ),
-          );
-        } else {
-          return Container(
-            height: 0.0,
-          );
-        }
+      icon: Icon(Icons.person),
+      label: _formMode == FormMode.SIGNUP
+        ? Text('S\'inscrire')
+        : Text('Se connecter')
+      ,
+      textColor: Colors.white,
+      color: Colors.blue,
+      highlightColor: Colors.blue[400],
+      disabledColor: Colors.grey[200],
+      onPressed: () {
+        Navigator.pushNamed(context, '/activity');
       },
     );
   }
+
+  Widget _submitButton() {
+    return FlatButton.icon(
+      icon: Icon(Icons.person),
+      label: _formMode == FormMode.SIGNUP
+        ? Text('S\'inscrire')
+        : Text('Se connecter')
+      ,
+      textColor: Colors.white,
+      color: Colors.blue,
+      highlightColor: Colors.blue[400],
+      disabledColor: Colors.grey[200],
+      onPressed: _submit,
+    );
+  }
+
+  void _submit() {
+    setState(() {
+      _autovalidate = true;
+      _errorMessage = '';
+      });
+    if (_formKey.currentState.validate()) {
+      _formKey.currentState.save();
+      if (_password == _confirmedPassword || _formMode == FormMode.LOGIN) {
+        print('Email is : $_email\nPassword is : $_password');
+        setState(() => _autovalidate = false);
+        Navigator.pushNamed(context, '/activity');
+      }
+      else {
+        setState(() {
+          _errorMessage = 'Les mots de passe ne correspondent pas';
+        });
+      }
+    }
+  }
+
+  Widget _switchButton() {
+    return Text.rich(
+      TextSpan(
+        text: _formMode == FormMode.LOGIN 
+          ? 'Pas de compte ? '
+          : 'Déjà un compte ? ',
+        style: TextStyle(fontSize: 12.0, color: Colors.grey[600]),
+        children: <TextSpan>[
+          TextSpan(
+            text: _formMode == FormMode.LOGIN 
+              ? 'Inscrivez vous !'
+              : 'Connectez vous !',
+            style: TextStyle(decoration:TextDecoration.underline,),
+            recognizer: TapGestureRecognizer()
+                  ..onTap = _formMode == FormMode.SIGNUP
+                    ? _changeFormToLogin
+                    : _changeFormToSignUp,
+          ),
+        ],
+      ),
+      textAlign: TextAlign.left,
+    );
+  }
+
+  void _changeFormToSignUp() {
+    _formKey.currentState.reset();
+    setState(() {
+      _formMode = FormMode.SIGNUP;
+      _autovalidate = false;
+      _obscure = true;
+      _errorMessage = '';
+    });
+  }
+
+  void _changeFormToLogin() {
+    _formKey.currentState.reset();
+    setState(() {
+      _formMode = FormMode.LOGIN;
+      _autovalidate = false;
+      _obscure = true;
+      _errorMessage = '';
+    });
+  }
+
+  Widget _showErrorMessage(String error) {
+    if (error.length > 0 && error != null) {
+      return Text(
+        error,
+        style: TextStyle(
+          fontSize: 13.0,
+          color: Colors.red,
+          height: 1.0,
+          fontWeight: FontWeight.w300,
+        ),
+      );
+    }
+    else {
+      return Container(
+        height: 0.0,
+      );
+    }
+  }
+
 }

@@ -34,7 +34,7 @@ class AnimatedBottomBar extends StatefulWidget {
 class BarStyle {
   final double fontSize, iconSize;
   final FontWeight fontWeight;
-  const BarStyle({this.fontSize = 16.0, this.iconSize = 30.0, this.fontWeight = FontWeight.w500});
+  const BarStyle({this.fontSize = 14.0, this.iconSize = 25.0, this.fontWeight = FontWeight.w500});
 }
 
 class _AnimatedBottomBarState extends State<AnimatedBottomBar>
