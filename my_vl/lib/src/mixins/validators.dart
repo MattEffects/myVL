@@ -1,8 +1,11 @@
 class Validators {
 
   String validateEmail (String value) {
-    // Return null if valid
-    // Otherwise string (with error message) if invalid
+    // Renvoie null si l'email est valide
+    // A l'inverse, renvoie un String avec le msg d'erreur si l'email est invalide
+    if (value.length == 0 || value == null) {
+      return 'Merci de renseigner un email';
+    }
     if (!((value.contains('@')) && (value.contains('.')))) {
       return 'Merci de renseigner un email valide';
     }
