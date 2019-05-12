@@ -6,9 +6,9 @@ import '../services/authentication.dart';
 enum FormMode { LOGIN, SIGNUP } 
 
 class AuthScreen extends StatefulWidget {
-  AuthScreen({@required this.auth});
+  AuthScreen({@required this.auth, @required this.onSignedIn});
   final BaseAuth auth;
-
+  final VoidCallback onSignedIn;
   @override
   _AuthScreenState createState() => _AuthScreenState();
 }
@@ -106,58 +106,16 @@ class _AuthScreenState extends State<AuthScreen> with Validators{
         if (_formMode == FormMode.LOGIN) {
           String userId = await widget.auth.signInWithEmailAndPassword(_email, _password);
           print('Connecté : $userId');
-          showDialog(
-            context: context,
-            builder: (context) {
-              return AlertDialog(
-                title: Text('Félicitations !'),
-                content: Text('Vous vous êtes connecté avec succès. \nVotre ID est $userId'),
-                actions: <Widget>[
-                  FlatButton(
-                    child: Text('Annuler'),
-                    onPressed: () => Navigator.of(context).pop(),
-                  ),
-                  FlatButton(
-                    child: Text('Continuer'),
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                      Navigator.pushNamed(context, '/activity');
-                    },
-                  ),
-                ],
-              );
-            },
-          );
         }
         else {
           String userId = await widget.auth.signUpWithEmailAndPassword(_email, _password);
           print('Inscrit : $userId');
-          showDialog(
-            context: context,
-            builder: (context) {
-              return AlertDialog(
-                title: Text('Félicitations !'),
-                content: Text('Vous vous êtes inscrit avec succès. \n Votre ID est $userId'),
-                actions: <Widget>[
-                  FlatButton(
-                    child: Text('Annuler'),
-                    onPressed: () => Navigator.of(context).pop(),
-                  ),
-                  FlatButton(
-                    child: Text('Continuer'),
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                      Navigator.pushNamed(context, '/activity');
-                    },
-                  ),
-                ],
-              );
-            },
-          );
         }
         setState(() {
           _isLoading = false;
         });
+        widget.onSignedIn();
+        Navigator.of(context).pop();
       }
       catch (e) {
         print('Error: $e');

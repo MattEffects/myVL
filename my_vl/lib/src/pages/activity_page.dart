@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_vl/src/services/authentication.dart';
 import '../widgets/animated_bottom_bar.dart';
 import 'activity_screens/news_screen.dart';
 import 'activity_screens/survey_screen.dart';
@@ -6,7 +7,11 @@ import 'activity_screens/feedback_screen.dart';
 import 'activity_screens/results_screen.dart';
 import 'package:outline_material_icons/outline_material_icons.dart';
 
-class ActivityScreen extends StatefulWidget {
+class ActivityPage extends StatefulWidget {
+  ActivityPage({@required this.auth, @required this.onSignedOut});
+  final BaseAuth auth;
+  final VoidCallback onSignedOut;
+
   final List<BarItem> barItems = [
     BarItem(
       text: 'Nouvelles',
@@ -42,10 +47,10 @@ class ActivityScreen extends StatefulWidget {
   ];
 
   @override
-  _ActivityScreenState createState() => _ActivityScreenState();
+  _ActivityPageState createState() => _ActivityPageState();
 }
 
-class _ActivityScreenState extends State<ActivityScreen> {
+class _ActivityPageState extends State<ActivityPage> {
   int selectedBarIndex = 0;
   bool _isDark = false;
 
@@ -80,7 +85,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
 
   _buildDrawer() {
     return SizedBox(
-      width: MediaQuery.of(context).size.width*3/4,
+      width: MediaQuery.of(context).size.width * 3 / 4,
       child: Drawer(
         child: Stack(
           children: <Widget>[
@@ -99,6 +104,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
                 children: <Widget>[
                   Container(
                     child: Column(
+                      mainAxisSize: MainAxisSize.max,
                       children: <Widget>[
                         Padding(
                           padding: const EdgeInsets.all(25.0),
@@ -128,101 +134,122 @@ class _ActivityScreenState extends State<ActivityScreen> {
                   SizedBox(
                     height: 40.0,
                   ),
-                  Container(
-                    height: 180,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.max,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        ListTile(
-                          contentPadding: EdgeInsets.symmetric(
-                            horizontal: 70.0,
-                          ),
-                          leading: Icon(OMIcons.mail),
-                          title: Text(
-                            'Messagerie',
-                            style: TextStyle(
-                              fontSize: 18.0,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.black.withOpacity(0.5),
+                  Expanded(
+                    flex: 2,
+                    child: Container(
+                      height: 180,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.max,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: <Widget>[
+                          ListTile(
+                            contentPadding: EdgeInsets.symmetric(
+                              horizontal: 70.0,
+                            ),
+                            leading: Icon(OMIcons.mail),
+                            title: Text(
+                              'Messagerie',
+                              style: TextStyle(
+                                fontSize: 18.0,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.black.withOpacity(0.5),
+                              ),
                             ),
                           ),
-                        ),
-                        // Test Handmade de ListTile
-                        // InkWell(
-                        //   child: Padding(
-                        //     padding: const EdgeInsets.symmetric(
-                        //       horizontal: 0.0,
-                        //       vertical: 15.0,
-                        //     ),
-                        //     child: Row(
-                        //       mainAxisSize: MainAxisSize.max,
-                        //       mainAxisAlignment: MainAxisAlignment.center,
-                        //       children: <Widget>[
-                        //         Row(
-                        //           mainAxisSize: MainAxisSize.min,
-                        //           children: <Widget>[
-                        //             Icon(
-                        //               Icons.restaurant,
-                        //               color: Colors.black.withOpacity(0.5),
-                        //             ),
-                        //             SizedBox(width: 30.0),
-                        //             Text(
-                        //               'Restauration',
-                        //               style: TextStyle(
-                        //                 fontSize: 18.0,
-                        //                 fontWeight: FontWeight.w500,
-                        //                 color: Colors.black.withOpacity(0.5),
-                        //               ),
-                        //             )
-                        //           ],
-                        //         ),
-                        //       ],
-                        //     ),
-                        //   ),
-                        //   onTap: () {
-                        //     Navigator.pop(context);
-                        //     Navigator.pushNamed(context, '/restauration');
-                        //   },
-                        // ),
-                        ListTile(
-                          contentPadding: EdgeInsets.symmetric(
-                            horizontal: 70.0,
-                          ),
-                          leading: Icon(Icons.restaurant),
-                          title: Text(
-                            'Restauration',
-                            style: TextStyle(
-                              fontSize: 18.0,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.black.withOpacity(0.5),
+                          // Test Handmade de ListTile
+                          // InkWell(
+                          //   child: Padding(
+                          //     padding: const EdgeInsets.symmetric(
+                          //       horizontal: 0.0,
+                          //       vertical: 15.0,
+                          //     ),
+                          //     child: Row(
+                          //       mainAxisSize: MainAxisSize.max,
+                          //       mainAxisAlignment: MainAxisAlignment.center,
+                          //       children: <Widget>[
+                          //         Row(
+                          //           mainAxisSize: MainAxisSize.min,
+                          //           children: <Widget>[
+                          //             Icon(
+                          //               Icons.restaurant,
+                          //               color: Colors.black.withOpacity(0.5),
+                          //             ),
+                          //             SizedBox(width: 30.0),
+                          //             Text(
+                          //               'Restauration',
+                          //               style: TextStyle(
+                          //                 fontSize: 18.0,
+                          //                 fontWeight: FontWeight.w500,
+                          //                 color: Colors.black.withOpacity(0.5),
+                          //               ),
+                          //             )
+                          //           ],
+                          //         ),
+                          //       ],
+                          //     ),
+                          //   ),
+                          //   onTap: () {
+                          //     Navigator.pop(context);
+                          //     Navigator.pushNamed(context, '/restauration');
+                          //   },
+                          // ),
+                          ListTile(
+                            contentPadding: EdgeInsets.symmetric(
+                              horizontal: 70.0,
                             ),
-                          ),
-                          onTap: () {
-                            Navigator.pop(context);
-                            Navigator.pushNamed(context, '/restauration');
-                          },
-                        ),
-                        ListTile(
-                          contentPadding: EdgeInsets.symmetric(
-                            horizontal: 70.0,
-                          ),
-                          leading: Icon(Icons.tune),
-                          title: Text(
-                            'Paramètres',
-                            style: TextStyle(
-                              fontSize: 18.0,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.black.withOpacity(0.5),
+                            leading: Icon(Icons.restaurant),
+                            title: Text(
+                              'Restauration',
+                              style: TextStyle(
+                                fontSize: 18.0,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.black.withOpacity(0.5),
+                              ),
                             ),
+                            onTap: () {
+                              Navigator.pop(context);
+                              Navigator.pushNamed(context, '/restauration');
+                            },
                           ),
-                          onTap: () =>
-                              Navigator.pushNamed(context, '/settings'),
-                        ),
-                      ],
+                          ListTile(
+                            contentPadding: EdgeInsets.symmetric(
+                              horizontal: 70.0,
+                            ),
+                            leading: Icon(Icons.tune),
+                            title: Text(
+                              'Paramètres',
+                              style: TextStyle(
+                                fontSize: 18.0,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.black.withOpacity(0.5),
+                              ),
+                            ),
+                            onTap: () =>
+                                Navigator.pushNamed(context, '/settings'),
+                          ),
+                          ListTile(
+                            contentPadding: EdgeInsets.symmetric(
+                              horizontal: 70.0,
+                            ),
+                            leading: Icon(Icons.cancel),
+                            title: Text(
+                              'Déconnexion',
+                              style: TextStyle(
+                                fontSize: 18.0,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.black.withOpacity(0.5),
+                              ),
+                            ),
+                            onTap: () {
+                              widget.auth.signOut()..then((value) => widget.onSignedOut());
+                            },
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                   Expanded(
+                    flex: 1,
                     child: Align(
                       alignment: Alignment.bottomCenter,
                       child: InkWell(

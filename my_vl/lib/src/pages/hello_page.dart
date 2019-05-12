@@ -1,17 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:my_vl/src/pages/auth_screen.dart';
 import 'dart:ui';
+
+import 'package:my_vl/src/services/authentication.dart';
 
 // Création de l'écran de bienvenue
 // StatefulWidget pour la gestion des animations
-class HelloScreen extends StatefulWidget {
+class HelloPage extends StatefulWidget {
+  HelloPage({@required this.onSignedIn});
+  final VoidCallback onSignedIn;
+
   @override
-  _HelloScreenState createState() => _HelloScreenState();
+  _HelloPageState createState() => _HelloPageState();
 }
 
 // Création du State de notre écran de bienvenue
 // On joint le mixin permettant de synchroniser nos animations
-class _HelloScreenState extends State<HelloScreen>
+class _HelloPageState extends State<HelloPage>
     with TickerProviderStateMixin {
   var _bgAnimationDuration = Duration(milliseconds: 200);
   var _mainAnimationDuration = Duration(milliseconds: 300);
@@ -191,11 +197,37 @@ class _HelloScreenState extends State<HelloScreen>
               icon: Icon(Icons.person),
               label: Text('S\'inscrire'),
               textColor: Colors.white,
-              onPressed: () => Navigator.pushNamed(context, '/auth'),
+              onPressed: _start,
             ),
           ),
         );
       }
+    );
+  }
+
+  void _start() {
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        opaque: true,
+        transitionDuration: Duration(milliseconds: 100),
+        pageBuilder: (context, animation, animation2) {
+          return AuthScreen(
+            auth: Auth(),
+            onSignedIn: widget.onSignedIn,
+          );
+        },
+        transitionsBuilder: (_, animation, animation2, child) {
+          final curvedAnim = CurvedAnimation(parent: animation, curve: Curves.easeIn);
+          final curvedAnim2 = CurvedAnimation(parent: animation2, curve: Curves.easeIn);
+          return SlideTransition(
+            position: Tween<Offset>(begin: Offset(1.0, 0.0), end: Offset.zero).animate(animation),
+            child: SlideTransition(
+              position: Tween<Offset>(begin: Offset.zero, end: Offset(1.0, 0.0)).animate(animation2),
+              child: child,
+            ),
+          );
+        },
+      ),
     );
   }
 
