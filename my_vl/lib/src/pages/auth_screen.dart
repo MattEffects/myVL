@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
+import 'package:my_vl/src/blocs/auth_provider.dart';
 import '../mixins/validators.dart';
 import '../services/authentication.dart';
 
 enum FormMode { LOGIN, SIGNUP } 
 
 class AuthScreen extends StatefulWidget {
-  AuthScreen({@required this.auth, @required this.onSignedIn});
-  final BaseAuth auth;
-  final VoidCallback onSignedIn;
   @override
   _AuthScreenState createState() => _AuthScreenState();
 }
@@ -56,7 +54,7 @@ class _AuthScreenState extends State<AuthScreen> with Validators{
                 SizedBox(height: 15),
                 _passwordField(),
                 _formMode == FormMode.SIGNUP ? _confirmPasswordField() : SizedBox(),
-                SizedBox(height: 45),
+                SizedBox(height: 25),
                 _submitButton(),
                 SizedBox(height: 20),
                 _switchButton(),
@@ -96,6 +94,7 @@ class _AuthScreenState extends State<AuthScreen> with Validators{
   // Nous indique si le login/signup à réussi
   // Et nous retourne une erreur si ce n'est pas le cas
   void submit() async {
+    final BaseAuth auth = AuthProvider.of(context).auth;
     if (validateAndSave()) {
       setState(() {
         _isLoading = true;
@@ -104,17 +103,16 @@ class _AuthScreenState extends State<AuthScreen> with Validators{
       print('Email is : $_email\nPassword is : $_password');
       try {
         if (_formMode == FormMode.LOGIN) {
-          String userId = await widget.auth.signInWithEmailAndPassword(_email, _password);
+          String userId = await auth.signInWithEmailAndPassword(_email, _password);
           print('Connecté : $userId');
         }
         else {
-          String userId = await widget.auth.signUpWithEmailAndPassword(_email, _password);
+          String userId = await auth.signUpWithEmailAndPassword(_email, _password);
           print('Inscrit : $userId');
         }
         setState(() {
           _isLoading = false;
         });
-        widget.onSignedIn();
         Navigator.of(context).pop();
       }
       catch (e) {
@@ -145,6 +143,26 @@ class _AuthScreenState extends State<AuthScreen> with Validators{
       _obscure = true;
       _errorMessage = '';
     });
+  }
+
+  Widget _showErrorMessage(String error) {
+    if (error.length > 0 && error != null) {
+      return Text(
+        error,
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontSize: 13.0,
+          color: Colors.red,
+          height: 1.0,
+          fontWeight: FontWeight.w300,
+        ),
+      );
+    }
+    else {
+      return Container(
+        height: 0.0,
+      );
+    }
   }
 
   Widget _showLogo() {
@@ -273,25 +291,6 @@ class _AuthScreenState extends State<AuthScreen> with Validators{
       ),
       textAlign: TextAlign.left,
     );
-  }
-
-  Widget _showErrorMessage(String error) {
-    if (error.length > 0 && error != null) {
-      return Text(
-        error,
-        style: TextStyle(
-          fontSize: 13.0,
-          color: Colors.red,
-          height: 1.0,
-          fontWeight: FontWeight.w300,
-        ),
-      );
-    }
-    else {
-      return Container(
-        height: 0.0,
-      );
-    }
   }
 
   Widget _showProgress() {

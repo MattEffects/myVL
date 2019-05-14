@@ -3,14 +3,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:my_vl/src/pages/auth_screen.dart';
 import 'dart:ui';
 
-import 'package:my_vl/src/services/authentication.dart';
-
 // Création de l'écran de bienvenue
 // StatefulWidget pour la gestion des animations
 class HelloPage extends StatefulWidget {
-  HelloPage({@required this.onSignedIn});
-  final VoidCallback onSignedIn;
-
   @override
   _HelloPageState createState() => _HelloPageState();
 }
@@ -209,12 +204,9 @@ class _HelloPageState extends State<HelloPage>
     Navigator.of(context).push(
       PageRouteBuilder(
         opaque: true,
-        transitionDuration: Duration(milliseconds: 100),
+        transitionDuration: Duration(milliseconds: 200),
         pageBuilder: (context, animation, animation2) {
-          return AuthScreen(
-            auth: Auth(),
-            onSignedIn: widget.onSignedIn,
-          );
+          return AuthScreen();
         },
         transitionsBuilder: (_, animation, animation2, child) {
           final curvedAnim = CurvedAnimation(parent: animation, curve: Curves.easeIn);

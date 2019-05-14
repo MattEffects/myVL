@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:my_vl/src/services/authentication.dart';
 import '../widgets/animated_bottom_bar.dart';
+import '../blocs/auth_provider.dart';
 import 'activity_screens/news_screen.dart';
 import 'activity_screens/survey_screen.dart';
 import 'activity_screens/feedback_screen.dart';
@@ -8,10 +9,6 @@ import 'activity_screens/results_screen.dart';
 import 'package:outline_material_icons/outline_material_icons.dart';
 
 class ActivityPage extends StatefulWidget {
-  ActivityPage({@required this.auth, @required this.onSignedOut});
-  final BaseAuth auth;
-  final VoidCallback onSignedOut;
-
   final List<BarItem> barItems = [
     BarItem(
       text: 'Nouvelles',
@@ -56,6 +53,8 @@ class _ActivityPageState extends State<ActivityPage> {
 
   @override
   Widget build(BuildContext context) {
+    final BaseAuth auth = AuthProvider.of(context).auth;
+    // auth.reload();
     return Scaffold(
       drawer: _buildDrawer(),
       appBar: AppBar(
@@ -83,7 +82,18 @@ class _ActivityPageState extends State<ActivityPage> {
     );
   }
 
+  _signOut() async {
+    try {
+      final BaseAuth auth = AuthProvider.of(context).auth;
+      Navigator.of(context).pop();
+      await auth.signOut();
+    } catch (e) {
+      print(e);
+    }
+  }
+
   _buildDrawer() {
+    final BaseAuth auth = AuthProvider.of(context).auth;
     return SizedBox(
       width: MediaQuery.of(context).size.width * 3 / 4,
       child: Drawer(
@@ -114,13 +124,18 @@ class _ActivityPageState extends State<ActivityPage> {
                             radius: 80,
                           ),
                         ),
-                        Text(
-                          'Noémie Currato',
-                          style: TextStyle(
-                            fontSize: 18.0,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
+                        FutureBuilder<String>(
+                            future: auth.userName(),
+                            builder: (BuildContext context,
+                                AsyncSnapshot<String> snapshot) {
+                              return Text(
+                                '${snapshot.data}',
+                                style: TextStyle(
+                                  fontSize: 18.0,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              );
+                            }),
                         SizedBox(height: 5.0),
                         Text(
                           'Jean Jaurès - TS',
@@ -240,9 +255,7 @@ class _ActivityPageState extends State<ActivityPage> {
                                 color: Colors.black.withOpacity(0.5),
                               ),
                             ),
-                            onTap: () {
-                              widget.auth.signOut()..then((value) => widget.onSignedOut());
-                            },
+                            onTap: _signOut,
                           ),
                         ],
                       ),
