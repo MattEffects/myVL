@@ -28,6 +28,7 @@ dependencies:
   cloud_firestore: ^0.11.0+1
   rxdart: ^0.22.0
   outline_material_icons: ^0.1.0
+  auto_size_text: ^1.1.2
 
 dev_dependencies:
   flutter_test:

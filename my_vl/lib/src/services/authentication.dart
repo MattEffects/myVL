@@ -2,7 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 // On crée la classe abstraite BaseAuth
 // Qui définit les attributs nécessaires à une classe d'authentification
-abstract class BaseAuth {
+abstract class AuthBase {
   Stream<String> get onAuthStateChanged;
   Future<String> signInWithEmailAndPassword(String email, String password);
   Future<String> signUpWithEmailAndPassword(String email, String password);
@@ -15,7 +15,7 @@ abstract class BaseAuth {
 // Notre classe d'authentification via Firebase
 // Implémentant BaseAuth, c'est à dire répondant à ses prérequis
 // Et pouvant donc être assignée comme propriété de type BaseAuth
-class Auth implements BaseAuth {
+class Auth implements AuthBase {
   // Création d'une instance utilisable de FirebaseAuth
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
 

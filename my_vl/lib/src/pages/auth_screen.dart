@@ -94,7 +94,7 @@ class _AuthScreenState extends State<AuthScreen> with Validators{
   // Nous indique si le login/signup à réussi
   // Et nous retourne une erreur si ce n'est pas le cas
   void submit() async {
-    final BaseAuth auth = AuthProvider.of(context).auth;
+    final AuthBase auth = AuthProvider.of(context).auth;
     if (validateAndSave()) {
       setState(() {
         _isLoading = true;

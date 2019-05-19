@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:my_vl/src/services/authentication.dart';
 import '../widgets/animated_bottom_bar.dart';
 import '../blocs/auth_provider.dart';
+import '../blocs/bloc_provider.dart';
+import '../blocs/state_bloc.dart';
 import 'activity_screens/news_screen.dart';
 import 'activity_screens/survey_screen.dart';
 import 'activity_screens/feedback_screen.dart';
 import 'activity_screens/results_screen.dart';
 import 'package:outline_material_icons/outline_material_icons.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 
 class ActivityPage extends StatefulWidget {
   final List<BarItem> barItems = [
@@ -53,14 +56,19 @@ class _ActivityPageState extends State<ActivityPage> {
 
   @override
   Widget build(BuildContext context) {
-    final BaseAuth auth = AuthProvider.of(context).auth;
+    final AuthBase auth = AuthProvider.of(context).auth;
     // auth.reload();
     return Scaffold(
       drawer: _buildDrawer(),
       appBar: AppBar(
-        title: Text('${widget.barItems[selectedBarIndex].text}'),
+        title: Text(
+          '${widget.barItems[selectedBarIndex].text}',
+          style: TextStyle(color: widget.barItems[selectedBarIndex].color),
+        ),
         centerTitle: true,
-        backgroundColor: widget.barItems[selectedBarIndex].color,
+        backgroundColor: Theme.of(context)
+            .canvasColor, // widget.barItems[selectedBarIndex].color,
+        elevation: 0,
         leading: SizedBox(),
       ),
 
@@ -84,7 +92,7 @@ class _ActivityPageState extends State<ActivityPage> {
 
   _signOut() async {
     try {
-      final BaseAuth auth = AuthProvider.of(context).auth;
+      final AuthBase auth = AuthProvider.of(context).auth;
       Navigator.of(context).pop();
       await auth.signOut();
     } catch (e) {
@@ -93,230 +101,251 @@ class _ActivityPageState extends State<ActivityPage> {
   }
 
   _buildDrawer() {
-    final BaseAuth auth = AuthProvider.of(context).auth;
+    final AuthBase auth = AuthProvider.of(context).auth;
+    final _tilesPadding = EdgeInsets.symmetric(
+      horizontal: MediaQuery.of(context).size.width / 9,
+    );
     return SizedBox(
       width: MediaQuery.of(context).size.width * 3 / 4,
       child: Drawer(
-        child: Stack(
-          children: <Widget>[
-            Container(
-              // decoration: BoxDecoration(
-              //   image: DecorationImage(
-              //     fit: BoxFit.cover,
-              //     image: AssetImage('assets/bg_imgs/girl_book.jpg'),
-              //   ),
-              // ),
-              padding: EdgeInsets.symmetric(
-                vertical: 35.0,
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.max,
-                children: <Widget>[
-                  Container(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.max,
-                      children: <Widget>[
-                        Padding(
-                          padding: const EdgeInsets.all(25.0),
+        child: Container(
+          padding: EdgeInsets.fromLTRB(
+            0,
+            MediaQuery.of(context).size.height / 15,
+            0,
+            MediaQuery.of(context).size.height / 30,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.max,
+            children: <Widget>[
+              Expanded(
+                flex: 3,
+                child: Container(
+                  width: double.infinity,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.max,
+                    children: <Widget>[
+                      Expanded(
+                        child: AspectRatio(
+                          aspectRatio: 1.0,
                           child: CircleAvatar(
                             backgroundImage:
                                 AssetImage('assets/bg_imgs/girl_book.jpg'),
-                            radius: 80,
+                            // radius: 80,
                           ),
                         ),
-                        FutureBuilder<String>(
-                            future: auth.userName(),
-                            builder: (BuildContext context,
-                                AsyncSnapshot<String> snapshot) {
-                              return Text(
-                                '${snapshot.data}',
-                                style: TextStyle(
-                                  fontSize: 18.0,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              );
-                            }),
-                        SizedBox(height: 5.0),
-                        Text(
-                          'Jean Jaurès - TS',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w300,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  SizedBox(
-                    height: 40.0,
-                  ),
-                  Expanded(
-                    flex: 2,
-                    child: Container(
-                      height: 180,
-                      child: Column(
-                        mainAxisSize: MainAxisSize.max,
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: <Widget>[
-                          ListTile(
-                            contentPadding: EdgeInsets.symmetric(
-                              horizontal: 70.0,
-                            ),
-                            leading: Icon(OMIcons.mail),
-                            title: Text(
-                              'Messagerie',
-                              style: TextStyle(
-                                fontSize: 18.0,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.black.withOpacity(0.5),
-                              ),
-                            ),
-                          ),
-                          // Test Handmade de ListTile
-                          // InkWell(
-                          //   child: Padding(
-                          //     padding: const EdgeInsets.symmetric(
-                          //       horizontal: 0.0,
-                          //       vertical: 15.0,
-                          //     ),
-                          //     child: Row(
-                          //       mainAxisSize: MainAxisSize.max,
-                          //       mainAxisAlignment: MainAxisAlignment.center,
-                          //       children: <Widget>[
-                          //         Row(
-                          //           mainAxisSize: MainAxisSize.min,
-                          //           children: <Widget>[
-                          //             Icon(
-                          //               Icons.restaurant,
-                          //               color: Colors.black.withOpacity(0.5),
-                          //             ),
-                          //             SizedBox(width: 30.0),
-                          //             Text(
-                          //               'Restauration',
-                          //               style: TextStyle(
-                          //                 fontSize: 18.0,
-                          //                 fontWeight: FontWeight.w500,
-                          //                 color: Colors.black.withOpacity(0.5),
-                          //               ),
-                          //             )
-                          //           ],
-                          //         ),
-                          //       ],
-                          //     ),
-                          //   ),
-                          //   onTap: () {
-                          //     Navigator.pop(context);
-                          //     Navigator.pushNamed(context, '/restauration');
-                          //   },
-                          // ),
-                          ListTile(
-                            contentPadding: EdgeInsets.symmetric(
-                              horizontal: 70.0,
-                            ),
-                            leading: Icon(Icons.restaurant),
-                            title: Text(
-                              'Restauration',
-                              style: TextStyle(
-                                fontSize: 18.0,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.black.withOpacity(0.5),
-                              ),
-                            ),
-                            onTap: () {
-                              Navigator.pop(context);
-                              Navigator.pushNamed(context, '/restauration');
-                            },
-                          ),
-                          ListTile(
-                            contentPadding: EdgeInsets.symmetric(
-                              horizontal: 70.0,
-                            ),
-                            leading: Icon(Icons.tune),
-                            title: Text(
-                              'Paramètres',
-                              style: TextStyle(
-                                fontSize: 18.0,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.black.withOpacity(0.5),
-                              ),
-                            ),
-                            onTap: () =>
-                                Navigator.pushNamed(context, '/settings'),
-                          ),
-                          ListTile(
-                            contentPadding: EdgeInsets.symmetric(
-                              horizontal: 70.0,
-                            ),
-                            leading: Icon(Icons.cancel),
-                            title: Text(
-                              'Déconnexion',
-                              style: TextStyle(
-                                fontSize: 18.0,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.black.withOpacity(0.5),
-                              ),
-                            ),
-                            onTap: _signOut,
-                          ),
-                        ],
                       ),
-                    ),
-                  ),
-                  Expanded(
-                    flex: 1,
-                    child: Align(
-                      alignment: Alignment.bottomCenter,
-                      child: InkWell(
-                        borderRadius: BorderRadius.all(Radius.circular(30.0)),
-                        onTap: () {
-                          setState(() {
-                            _isDark = !_isDark;
-                          });
-                        },
-                        child: AnimatedContainer(
-                          width: 100.0,
-                          height: 40.0,
-                          duration: const Duration(milliseconds: 200),
-                          child: Center(
-                            child: Text(
-                              _isDark ? 'Mode Jour' : 'Mode Nuit',
+                      SizedBox(height: 15.0),
+                      FutureBuilder<String>(
+                          future: auth.userName(),
+                          builder: (BuildContext context,
+                              AsyncSnapshot<String> snapshot) {
+                            return Text(
+                              '${snapshot.data}',
                               style: TextStyle(
-                                fontWeight: FontWeight.w400,
-                                color:
-                                    _isDark ? Colors.grey[800] : Colors.white,
+                                fontSize: 18.0,
+                                fontWeight: FontWeight.w500,
                               ),
-                            ),
+                            );
+                          }),
+                      SizedBox(height: 5.0),
+                      Text(
+                        'Jean Jaurès - TS',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w300,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              SizedBox(
+                height: MediaQuery.of(context).size.height / 40,
+              ),
+              Expanded(
+                flex: 6,
+                child: Container(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.max,
+                    // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      ListTile(
+                        contentPadding: _tilesPadding,
+                        leading: Icon(OMIcons.mail),
+                        title: AutoSizeText(
+                          'Messagerie',
+                          presetFontSizes: [18.0, 16.0],
+                          maxLines: 1,
+                          style: TextStyle(
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black.withOpacity(0.5),
                           ),
-                          decoration: BoxDecoration(
-                            color: _isDark
-                                ? Colors.lightBlue[50]
-                                : Colors.indigo[800],
+                        ),
+                        onTap: () {},
+                      ),
+                      ListTile(
+                        contentPadding: _tilesPadding,
+                        leading: Icon(Icons.restaurant),
+                        title: AutoSizeText(
+                          'Restauration',
+                          presetFontSizes: [18.0, 16.0],
+                          maxLines: 1,
+                          style: TextStyle(
+                            fontSize: 18.0,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black.withOpacity(0.5),
+                          ),
+                        ),
+                        onTap: () {
+                          Navigator.pop(context);
+                          Navigator.pushNamed(context, '/restauration');
+                        },
+                      ),
+                      ListTile(
+                        contentPadding: _tilesPadding,
+                        leading: Icon(Icons.tune),
+                        title: AutoSizeText(
+                          'Paramètres',
+                          presetFontSizes: [18.0, 16.0],
+                          maxLines: 1,
+                          style: TextStyle(
+                            fontSize: 18.0,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black.withOpacity(0.5),
+                          ),
+                        ),
+                        onTap: () {
+                          Navigator.pop(context);
+                          Navigator.pushNamed(context, '/settings');
+                        },
+                      ),
+                      ListTile(
+                        contentPadding: _tilesPadding,
+                        leading: Icon(Icons.cancel),
+                        title: AutoSizeText(
+                          'Déconnexion',
+                          presetFontSizes: [18.0, 16.0],
+                          maxLines: 1,
+                          style: TextStyle(
+                            fontSize: 18.0,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black.withOpacity(0.5),
+                          ),
+                        ),
+                        onTap: _signOut,
+                      ),
+                      // Test Handmade de ListTile
+                      // InkWell(
+                      //   child: Padding(
+                      //     padding: const EdgeInsets.symmetric(
+                      //       horizontal: 0.0,
+                      //       vertical: 15.0,
+                      //     ),
+                      //     child: Row(
+                      //       mainAxisSize: MainAxisSize.max,
+                      //       mainAxisAlignment: MainAxisAlignment.center,
+                      //       children: <Widget>[
+                      //         Row(
+                      //           mainAxisSize: MainAxisSize.min,
+                      //           children: <Widget>[
+                      //             Icon(
+                      //               Icons.restaurant,
+                      //               color: Colors.black.withOpacity(0.5),
+                      //             ),
+                      //             SizedBox(width: 30.0),
+                      //             Text(
+                      //               'Restauration',
+                      //               style: TextStyle(
+                      //                 fontSize: 18.0,
+                      //                 fontWeight: FontWeight.w500,
+                      //                 color: Colors.black.withOpacity(0.5),
+                      //               ),
+                      //             )
+                      //           ],
+                      //         ),
+                      //       ],
+                      //     ),
+                      //   ),
+                      //   onTap: () {
+                      //     Navigator.pop(context);
+                      //     Navigator.pushNamed(context, '/restauration');
+                      //   },
+                      // ),
+                    ],
+                  ),
+                ),
+              ),
+              Expanded(
+                flex: 1,
+                child: Align(
+                  alignment: Alignment.bottomCenter,
+                  child: StreamBuilder<dynamic>(
+                      stream: BlocProvider.of<StateBloc>(context).darkMode,
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData) {
+                          return InkWell(
                             borderRadius:
                                 BorderRadius.all(Radius.circular(30.0)),
+                            onTap: () {
+                              BlocProvider.of<StateBloc>(context)
+                                  .toggleDarkMode(!snapshot.data);
+                            },
+                            child: AnimatedContainer(
+                              width: 100.0,
+                              height: 40.0,
+                              duration: const Duration(milliseconds: 200),
+                              child: Center(
+                                child: Text(
+                                  snapshot.data ? 'Mode Jour' : 'Mode Nuit',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w400,
+                                    color: snapshot.data
+                                        ? Colors.grey[800]
+                                        : Colors.white,
+                                  ),
+                                ),
+                              ),
+                              decoration: BoxDecoration(
+                                color: snapshot.data
+                                    ? Colors.lightBlue[50]
+                                    : Colors.indigo[800],
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(30.0)),
+                              ),
+                            ),
+                          );
+                        }
+                        return InkWell(
+                          borderRadius: BorderRadius.all(Radius.circular(30.0)),
+                          onTap: () {
+                            BlocProvider.of<StateBloc>(context)
+                                .toggleDarkMode(true);
+                          },
+                          child: AnimatedContainer(
+                            width: 100.0,
+                            height: 40.0,
+                            duration: const Duration(milliseconds: 200),
+                            child: Center(
+                              child: Text(
+                                'Mode Nuit',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w400,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.indigo[800],
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(30.0)),
+                            )
                           ),
-                          // child: Row(
-                          //   mainAxisSize: MainAxisSize.min,
-                          //   children: <Widget>[
-                          //     Text(
-                          //       'Night Mode',
-                          //     ),
-                          //     Switch(
-                          //       value: _switchValue,
-                          //       onChanged: (value) {
-                          //         setState(() {
-                          //           _switchValue = value;
-                          //         });
-                          //       },
-                          //     ),
-                          //   ],
-                          // ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+                        );
+                      }),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

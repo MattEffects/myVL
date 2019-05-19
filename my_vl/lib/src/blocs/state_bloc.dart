@@ -1,9 +1,10 @@
 import 'dart:async';
-import '../mixins/validators.dart';
 import 'package:rxdart/rxdart.dart';
+import 'bloc_provider.dart';
 
-class AuthBloc extends Object with Validators{
+class StateBloc implements BlocBase {
   // Déclaration des StreamControllers nécessaires
+  final _darkMode = BehaviorSubject();
   final _email = BehaviorSubject<String>();
   final _password = BehaviorSubject<String>();
   final _confirmPassword = BehaviorSubject<String>();
@@ -11,6 +12,7 @@ class AuthBloc extends Object with Validators{
   final _error = BehaviorSubject<String>();
 
   // Getters de lecture des données des streams
+  Stream<dynamic> get darkMode => _darkMode.stream;
   Stream<String> get email => _email.stream;
   Stream<String> get password => _password.stream;
   Stream<String> get confirmPassword => _confirmPassword.stream;
@@ -23,7 +25,7 @@ class AuthBloc extends Object with Validators{
   Function(String) get changeEmail => _email.sink.add;
   Function(String) get changePassword => _password.sink.add;
   Function(String) get changeConfirmPassword => _confirmPassword.sink.add;
-  Function(bool) get toggle => _obscureText.sink.add;
+  Function(bool) get toggleDarkMode => _darkMode.sink.add;
   Function(String) get addError => _error.sink.add;
 
   // Fonction d'envoi des informations renseignées à Firebase
@@ -40,6 +42,7 @@ class AuthBloc extends Object with Validators{
 
   // Nous permet de fermer le sink de nos StreamControllers
   dispose() {
+    _darkMode.close();
     _email.close();
     _password.close();
     _confirmPassword.close();
@@ -47,5 +50,3 @@ class AuthBloc extends Object with Validators{
     _error.close();
   }
 }
-
-final bloc = AuthBloc();

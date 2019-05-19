@@ -4,7 +4,7 @@ import '../services/authentication.dart';
 class AuthProvider extends InheritedWidget {
   
   AuthProvider({Key key, Widget child, @required this.auth}) : super(key: key, child: child);
-  final BaseAuth auth;
+  final AuthBase auth;
 
   @override
   bool updateShouldNotify(_) => true;

@@ -8,7 +8,7 @@ class RootPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final BaseAuth auth = AuthProvider.of(context).auth;
+    final AuthBase auth = AuthProvider.of(context).auth;
     return StreamBuilder(
       stream: auth.onAuthStateChanged,
       builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
