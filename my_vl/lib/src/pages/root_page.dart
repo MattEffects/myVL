@@ -3,6 +3,8 @@ import 'package:my_vl/src/pages/activity_page.dart';
 import 'package:my_vl/src/pages/hello_page.dart';
 import '../blocs/auth_provider.dart';
 import '../services/authentication.dart';
+import '../blocs/bloc_provider.dart';
+import '../blocs/state_bloc.dart';
 
 class RootPage extends StatelessWidget {
 

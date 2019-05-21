@@ -90,10 +90,20 @@ class _ActivityPageState extends State<ActivityPage> {
     );
   }
 
+  Color _textColor(ThemeData theme) {
+    switch (theme.brightness) {
+      case Brightness.light:
+        return Colors.black.withOpacity(0.5);
+      case Brightness.dark:
+        return Theme.of(context).iconTheme.color; // null - use current icon theme color
+    }
+    return Colors.pink;
+  }
   _signOut() async {
     try {
       final AuthBase auth = AuthProvider.of(context).auth;
       Navigator.of(context).pop();
+      BlocProvider.of<StateBloc>(context).toggleDarkMode(true);
       await auth.signOut();
     } catch (e) {
       print(e);
@@ -178,7 +188,7 @@ class _ActivityPageState extends State<ActivityPage> {
                           maxLines: 1,
                           style: TextStyle(
                             fontWeight: FontWeight.w500,
-                            color: Colors.black.withOpacity(0.5),
+                            color: _textColor(Theme.of(context)),
                           ),
                         ),
                         onTap: () {},
@@ -193,7 +203,7 @@ class _ActivityPageState extends State<ActivityPage> {
                           style: TextStyle(
                             fontSize: 18.0,
                             fontWeight: FontWeight.w500,
-                            color: Colors.black.withOpacity(0.5),
+                            color: _textColor(Theme.of(context)),
                           ),
                         ),
                         onTap: () {
@@ -211,7 +221,7 @@ class _ActivityPageState extends State<ActivityPage> {
                           style: TextStyle(
                             fontSize: 18.0,
                             fontWeight: FontWeight.w500,
-                            color: Colors.black.withOpacity(0.5),
+                            color: _textColor(Theme.of(context)),
                           ),
                         ),
                         onTap: () {
@@ -229,7 +239,7 @@ class _ActivityPageState extends State<ActivityPage> {
                           style: TextStyle(
                             fontSize: 18.0,
                             fontWeight: FontWeight.w500,
-                            color: Colors.black.withOpacity(0.5),
+                            color: _textColor(Theme.of(context)),
                           ),
                         ),
                         onTap: _signOut,
