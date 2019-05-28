@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 // On crée la classe abstraite BaseAuth
 // Qui définit les attributs nécessaires à une classe d'authentification
@@ -18,19 +19,32 @@ abstract class AuthBase {
 class Auth implements AuthBase {
   // Création d'une instance utilisable de FirebaseAuth
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
+  final Firestore _firestore = Firestore.instance;
 
   Stream<String> get onAuthStateChanged {
     return _firebaseAuth.onAuthStateChanged.map((FirebaseUser user) => user?.uid);
   }
 
   Future<String> signInWithEmailAndPassword(String email, String password) async {
-    UserUpdateInfo updateInfo = UserUpdateInfo();
-    updateInfo.displayName = 'Noémie Currato';
+    // UserUpdateInfo updateInfo = UserUpdateInfo();
+    // updateInfo.displayName = 'Noémie Currato';
 
     FirebaseUser user = await _firebaseAuth.signInWithEmailAndPassword(
       email: email,
       password: password
     ).then((user) async {
+      
+      await _firestore.collection('users').document('${user.uid}').setData({
+        'name': {
+          'first': 'Noémie',
+          'last': 'Currato',
+        },
+        'email': '${user.email}'
+      }, merge: true);
+      UserUpdateInfo updateInfo = UserUpdateInfo();
+      await _firestore.collection('users').document('${user.uid}').get().then((doc) {
+        updateInfo.displayName = '${doc.data['name']['first']} ${doc.data['name']['last']}';
+      });
       await user.updateProfile(updateInfo);
       await user.reload();
       return user;

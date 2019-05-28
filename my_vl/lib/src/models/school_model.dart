@@ -17,33 +17,71 @@ enum Pathway {
 
 class School {
   final String name;
-  final List<Classroom> classrooms;
+  final List<SchoolClass> classes;
 
-  School.fromJson(Map<String, dynamic> parsedJson)
+  static List<SchoolClass> _getSchoolClasses(classesList) {
+    List<SchoolClass> schoolClasses = [];
+    classesList.forEach((schoolClass) {
+      final SchoolClass schoolClassToAdd = SchoolClass.fromJson(schoolClass);
+      schoolClasses.add(schoolClassToAdd);
+    });
+    return schoolClasses;
+  }
+
+  String toString() {
+    return """ 
+    Une école merveilleuse : $name
+    Avec ${classes.length} classes :
+    La ${classes[0].name} qui regroupe les élèves ${classes[0].getStudentsNames()}
+    La ${classes[1].name} qui regroupe les élèves ${classes[1].getStudentsNames()}
+    Que de bonheur !!
+    """;
+  }
+
+  School.fromJson(parsedJson)
     : name = parsedJson['name'],
-      classrooms = parsedJson['classrooms'];
+      classes = _getSchoolClasses(parsedJson['classes']);
 }
 
-class Classroom {
+class SchoolClass {
   final String name;
-  final Level level;
-  final Pathway pathway;
+  // final Level level;
+  // final Pathway pathway;
   final List<Student> students;
 
-  Classroom.fromJson(Map<String, dynamic> parsedJson)
+  String getStudentsNames() {
+    return '${students[0].toString()}, ${students[1].toString()}';
+  }
+
+  static List<Student> _getStudents(studentsList) {
+    List<Student> students = [];
+    studentsList.forEach((student) {
+      final studentToAdd = Student.fromJson(student);
+      students.add(studentToAdd);
+    });
+    return students;
+  }
+
+  SchoolClass.fromJson(parsedJson)
     : name = parsedJson['name'],
-      level = parsedJson['level'],
-      pathway = parsedJson['pathway'],
-      students = parsedJson['students'];
+      // level = parsedJson['level'],
+      // pathway = parsedJson['pathway'],
+      students = _getStudents(parsedJson['students']);
+
+
 }
 
 class Student {
   final String firstName;
-  final String secondName;
+  // final String secondName;
   final String lastName;
 
-  Student.fromJson(Map<String, String> parsedJson)
+  String toString() {
+    return '$firstName $lastName';
+  }
+
+  Student.fromJson(parsedJson)
     : firstName = parsedJson['firstName'],
-      secondName = parsedJson['secondName'],
+      // secondName = parsedJson['secondName'],
       lastName = parsedJson['lastName'];
 }

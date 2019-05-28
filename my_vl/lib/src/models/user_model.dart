@@ -7,7 +7,7 @@ class UserModel {
   final String lastName;
   final String photoUrl;
   final School school;
-  final Classroom classroom;
+  final SchoolClass classroom;
 
   UserModel.fromJson(Map<String, dynamic> parsedJson)
     : id = parsedJson['id'],

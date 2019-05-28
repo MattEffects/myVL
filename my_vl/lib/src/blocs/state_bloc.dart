@@ -5,37 +5,12 @@ import 'bloc_provider.dart';
 class StateBloc implements BlocBase {
   // Déclaration des StreamControllers nécessaires
   final _darkMode = BehaviorSubject();
-  final _email = BehaviorSubject<String>();
-  final _password = BehaviorSubject<String>();
-  final _confirmPassword = BehaviorSubject<String>();
-  final _obscureText = StreamController<bool>.broadcast();
-  final _error = BehaviorSubject<String>();
 
   // Getters de lecture des données des streams
   Stream<dynamic> get darkMode => _darkMode.stream;
-  Stream<String> get email => _email.stream;
-  Stream<String> get password => _password.stream;
-  Stream<String> get confirmPassword => _confirmPassword.stream;
-  Stream<bool> get submitValid =>
-    Observable.combineLatest3(email, password, confirmPassword, (e, p, c) => (p == c));
-  Stream<bool> get obscureText => _obscureText.stream;
-  Stream<String> get error => _error.stream;
 
   // Getters d'ajout de données aux streams
-  Function(String) get changeEmail => _email.sink.add;
-  Function(String) get changePassword => _password.sink.add;
-  Function(String) get changeConfirmPassword => _confirmPassword.sink.add;
   Function(bool) get toggleDarkMode => _darkMode.sink.add;
-  Function(String) get addError => _error.sink.add;
-
-  // Fonction d'envoi des informations renseignées à Firebase
-  submit() {
-    final validEmail = _email.value;
-    final validPassword = _password.value;
-    // error.drain();
-    print('Email is $validEmail');
-    print('Password is $validPassword');
-  }
 
   // Par convention, on crée une fonction 'dispose' à nos classes
   // pour nettoyer les objets et variables créés par cette classe
@@ -43,10 +18,5 @@ class StateBloc implements BlocBase {
   // Nous permet de fermer le sink de nos StreamControllers
   dispose() {
     _darkMode.close();
-    _email.close();
-    _password.close();
-    _confirmPassword.close();
-    _obscureText.close();
-    _error.close();
   }
 }
