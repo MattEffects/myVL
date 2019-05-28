@@ -103,7 +103,7 @@ class _ActivityPageState extends State<ActivityPage> {
     try {
       final AuthBase auth = AuthProvider.of(context).auth;
       Navigator.of(context).pop();
-      BlocProvider.of<StateBloc>(context).toggleDarkMode(true);
+      BlocProvider.of<StateBloc>(context).toggleDarkMode(false);
       await auth.signOut();
     } catch (e) {
       print(e);
