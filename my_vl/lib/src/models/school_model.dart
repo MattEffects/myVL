@@ -2,55 +2,85 @@ List<String> levels = ['seconde', 'premiere', 'terminale'];
 List<String> pathways = ['S', 'ES', 'L', 'STMG', 'STI2D', 'ST2S'];
 
 enum Level {
-  seconde,
-  premiere,
-  terminale,
+  SECONDE,
+  PREMIERE,
+  TERMINALE,
+  UNKNOWN,
 }
 enum Pathway {
   S,
   ES,
   L,
   STMG,
-  STI2D,
-  ST2S,
+  UNKNOWN,
+}
+
+enum Speciality {
+  ISN,
+  SVT,
+  UNKNOWN,
 }
 
 class School {
   final String name;
-  final List<SchoolClass> classes;
-
-  static List<SchoolClass> _getSchoolClasses(classesList) {
-    List<SchoolClass> schoolClasses = [];
-    classesList.forEach((schoolClass) {
-      final SchoolClass schoolClassToAdd = SchoolClass.fromJson(schoolClass);
-      schoolClasses.add(schoolClassToAdd);
-    });
-    return schoolClasses;
-  }
-
-  String toString() {
-    return """ 
-    Une école merveilleuse : $name
-    Avec ${classes.length} classes :
-    La ${classes[0].name} qui regroupe les élèves ${classes[0].getStudentsNames()}
-    La ${classes[1].name} qui regroupe les élèves ${classes[1].getStudentsNames()}
-    Que de bonheur !!
-    """;
-  }
+  final List<Classroom> classrooms;
 
   School.fromJson(parsedJson)
     : name = parsedJson['name'],
-      classes = _getSchoolClasses(parsedJson['classes']);
+      classrooms = _getSchoolClasses(parsedJson['classes']);
+
+  static List<Classroom> _getSchoolClasses(classroomsList) {
+    List<Classroom> classrooms = [];
+    classroomsList.forEach((classroom) {
+      final Classroom classroomToAdd = Classroom.fromJson(classroom);
+      classrooms.add(classroomToAdd);
+    });
+    return classrooms;
+  }
+
+  String toString() {
+    return name;
+  }
+
+  String toStringDebug() {
+    String getClasserooms(classrooms) {
+      String message = '';
+      classrooms.forEach((classroom) {
+        message = message + 'La ${classroom.name} qui regroupe les élèves ${classroom.getStudentsNames()}\n';
+      });
+      return message.replaceRange(message.length-1, message.length, '');
+    }
+    return """ 
+    Une école merveilleuse : $name
+    Avec ${classrooms.length} classrooms :
+    ${getClasserooms(classrooms)}
+    Que de bonheur !!
+    """;
+  }
 }
 
-class SchoolClass {
+class Classroom {
   final String name;
-  // final Level level;
-  // final Pathway pathway;
+  final String level;
+  final String pathway;
   final List<Student> students;
 
+  Classroom.fromJson(parsedJson)
+    : name = parsedJson['name'],
+      level = parsedJson['level'],
+      pathway = parsedJson['pathway'],
+      students = _getStudents(parsedJson['students']);
+
+  String toString() {
+    return name;
+  }
+
   String getStudentsNames() {
-    return '${students[0].toString()}, ${students[1].toString()}';
+    String message = '';
+    students.forEach((student) {
+      message = message + '${student.toString()}, ';
+    });
+    return message.replaceRange(message.length-2, message.length, '');
   }
 
   static List<Student> _getStudents(studentsList) {
@@ -62,26 +92,21 @@ class SchoolClass {
     return students;
   }
 
-  SchoolClass.fromJson(parsedJson)
-    : name = parsedJson['name'],
-      // level = parsedJson['level'],
-      // pathway = parsedJson['pathway'],
-      students = _getStudents(parsedJson['students']);
-
-
 }
 
 class Student {
   final String firstName;
   // final String secondName;
   final String lastName;
-
-  String toString() {
-    return '$firstName $lastName';
-  }
+  final String speciality;
 
   Student.fromJson(parsedJson)
     : firstName = parsedJson['firstName'],
       // secondName = parsedJson['secondName'],
-      lastName = parsedJson['lastName'];
+      lastName = parsedJson['lastName'],
+      speciality = parsedJson['speciality'];
+
+  String toString() {
+    return '$firstName $lastName';
+  }
 }

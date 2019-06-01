@@ -26,4 +26,31 @@ class Validators {
     return null;
   }
 
+  String validateFirstName (String value) {
+    if (value.length == 0 || value == null) {
+      return 'Merci de renseigner un prénom';
+    }
+    return null;
+  }
+
+  String validateLastName (String value) {
+    if (value.length == 0 || value == null) {
+      return 'Merci de renseigner un nom';
+    }
+    return null;
+  }
+
+  String validateSchool (int value) {
+    if (value == null) {
+      return 'Merci de renseigner un établissement';
+    }
+    return null;
+  }
+
+  String validateClassroom (int value) {
+    if (value == null) {
+      return 'Merci de renseigner une classe';
+    }
+    return null;
+  }
 }

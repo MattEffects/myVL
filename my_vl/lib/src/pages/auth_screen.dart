@@ -4,29 +4,45 @@ import 'package:my_vl/src/blocs/auth_provider.dart';
 import '../mixins/validators.dart';
 import '../services/authentication.dart';
 
-enum FormMode { LOGIN, SIGNUP } 
+enum FormMode { LOGIN, SIGNUP }
 
 class AuthScreen extends StatefulWidget {
   @override
   _AuthScreenState createState() => _AuthScreenState();
 }
 
-class _AuthScreenState extends State<AuthScreen> with Validators{
-  
+class _AuthScreenState extends State<AuthScreen> with Validators {
   FormMode _formMode = FormMode.SIGNUP; // Mode de l'écran
   bool _isLoading = false; // Statut de l'application (chargement ou non)
   bool _autovalidate = false; // Gère la validation auto des champs du formulaire
   bool _obscure = true; // Gère le masquage du mot de passe
   var _formKey = GlobalKey<FormState>(); // Clé référant à notre formulaire
+  var _spacing;
   String _email = '';
   String _password = '';
   String _confirmedPassword = '';
   String _errorMessage = '';
 
+  @override
   Widget build(context) {
+    setState(() {
+      _spacing = MediaQuery.of(context).size.width/30;
+    });
     return Scaffold(
       appBar: AppBar(
-        title: _formMode == FormMode.SIGNUP ? Text('Rejoindre MyVL') : Text('Se connecter'),
+        title: _formMode == FormMode.SIGNUP
+            ? Text(
+              'Rejoindre MyVL',
+              style: TextStyle(color: Theme.of(context).primaryColor),
+            )
+            : Text(
+              'Se connecter',
+              style: TextStyle(color: Theme.of(context).primaryColor),
+            ),
+        centerTitle: true,
+        backgroundColor: Theme.of(context).canvasColor,
+        elevation: 0,
+        iconTheme: IconTheme.of(context).copyWith(color: Theme.of(context).primaryColor),
       ),
       body: Stack(
         children: <Widget>[
@@ -40,38 +56,43 @@ class _AuthScreenState extends State<AuthScreen> with Validators{
   Widget _showBody() {
     return Center(
       child: SingleChildScrollView(
-          padding: EdgeInsets.all(30.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.max,
-              children: <Widget>[
-                _showLogo(),
-                SizedBox(height: 20),
-                _showErrorMessage(_errorMessage),
-                SizedBox(height: 20),
-                _emailField(),
-                SizedBox(height: 15),
-                _passwordField(),
-                _formMode == FormMode.SIGNUP ? _confirmPasswordField() : SizedBox(),
-                SizedBox(height: 25),
-                _submitButton(),
-                SizedBox(height: 20),
-                _switchButton(),
-              ],
-            ),
-          )),
+        padding: EdgeInsets.all(30.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.max,
+            children: <Widget>[
+              _showLogo(),
+              SizedBox(height: _spacing*2),
+              _showErrorMessage(_errorMessage),
+              SizedBox(height: (_errorMessage.length != 0) ? _spacing : 0),
+              _emailField(),
+              SizedBox(height: _spacing),
+              _passwordField(),
+              _formMode == FormMode.SIGNUP
+                  ? SizedBox(height: _spacing)
+                  : SizedBox(),
+              _formMode == FormMode.SIGNUP
+                  ? _confirmPasswordField()
+                  : SizedBox(),
+              SizedBox(height: 25),
+              _submitButton(),
+              _switchButton(),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
   // Se charge de vérifier nos conditions de validation de saisie
   // Les sauvegarde dans les variables prévues à cet effet
   // Et renvoie true ou false
-  bool validateAndSave() {
+  bool _validateAndSave() {
     setState(() {
       _autovalidate = true;
       _errorMessage = '';
-      });
+    });
     // Lance la validation du formulaire
     if (_formKey.currentState.validate()) {
       // Si valide, enregistre le formulaire dans les variables
@@ -79,8 +100,7 @@ class _AuthScreenState extends State<AuthScreen> with Validators{
       // Vérifie que les mots de passe correspondent si en SIGNUP mode
       if (_password == _confirmedPassword || _formMode == FormMode.LOGIN) {
         return true;
-      }
-      else {
+      } else {
         setState(() {
           _errorMessage = 'Les mots de passe ne correspondent pas';
         });
@@ -93,9 +113,9 @@ class _AuthScreenState extends State<AuthScreen> with Validators{
   // Envoie les informations à Firebase
   // Nous indique si le login/signup à réussi
   // Et nous retourne une erreur si ce n'est pas le cas
-  void submit() async {
+  void _submit() async {
     final AuthBase auth = AuthProvider.of(context).auth;
-    if (validateAndSave()) {
+    if (_validateAndSave()) {
       setState(() {
         _isLoading = true;
         _autovalidate = false;
@@ -103,19 +123,19 @@ class _AuthScreenState extends State<AuthScreen> with Validators{
       print('Email is : $_email\nPassword is : $_password');
       try {
         if (_formMode == FormMode.LOGIN) {
-          String userId = await auth.signInWithEmailAndPassword(_email, _password);
+          String userId =
+              await auth.signInWithEmailAndPassword(_email, _password);
           print('Connecté : $userId');
-        }
-        else {
-          String userId = await auth.signUpWithEmailAndPassword(_email, _password);
+        } else {
+          String userId =
+              await auth.signUpWithEmailAndPassword(_email, _password);
           print('Inscrit : $userId');
         }
         setState(() {
           _isLoading = false;
         });
         Navigator.of(context).pop();
-      }
-      catch (e) {
+      } catch (e) {
         print('Error: $e');
         setState(() {
           _isLoading = false;
@@ -157,8 +177,7 @@ class _AuthScreenState extends State<AuthScreen> with Validators{
           fontWeight: FontWeight.w300,
         ),
       );
-    }
-    else {
+    } else {
       return Container(
         height: 0.0,
       );
@@ -201,11 +220,12 @@ class _AuthScreenState extends State<AuthScreen> with Validators{
       validator: validateEmail,
       keyboardType: TextInputType.emailAddress,
       decoration: InputDecoration(
-        icon: Icon(
+        prefixIcon: Icon(
           Icons.email,
           color: Colors.grey,
         ),
         labelText: 'Email',
+        filled: true,
       ),
       onSaved: (value) => _email = value,
     );
@@ -220,7 +240,7 @@ class _AuthScreenState extends State<AuthScreen> with Validators{
       autovalidate: _autovalidate,
       validator: validatePassword,
       decoration: InputDecoration(
-        icon: Icon(
+        prefixIcon: Icon(
           Icons.lock,
           color: Colors.grey,
         ),
@@ -232,6 +252,7 @@ class _AuthScreenState extends State<AuthScreen> with Validators{
         ),
         labelText: 'Mot de passe',
         helperText: '8-24 caractères, majuscules et minuscules',
+        filled: true,
       ),
       onSaved: (value) => _password = value,
     );
@@ -244,48 +265,61 @@ class _AuthScreenState extends State<AuthScreen> with Validators{
       autocorrect: false,
       obscureText: true,
       decoration: InputDecoration(
-        icon: Icon(
+        prefixIcon: Icon(
           Icons.verified_user,
           color: Colors.grey,
         ),
         labelText: 'Confirmer le mot de passe',
+        filled: true,
       ),
       onSaved: (value) => _confirmedPassword = value,
     );
   }
 
   Widget _submitButton() {
-    return FlatButton.icon(
-      icon: Icon(Icons.person),
-      label: _formMode == FormMode.SIGNUP
-        ? Text('S\'inscrire')
-        : Text('Se connecter')
-      ,
-      textColor: Colors.white,
-      color: Colors.blue,
-      highlightColor: Colors.blue[400],
-      disabledColor: Colors.grey[200],
-      onPressed: submit,
+    return MaterialButton(
+      child: Text(
+        (_formMode == FormMode.SIGNUP) 
+          ? 'S\'inscrire'
+          : 'Se connecter',
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: Theme.of(context).textTheme.subhead.fontSize,
+        ),
+      ),
+      height: 42.0,
+      minWidth: MediaQuery.of(context).size.width,
+      color: Theme.of(context).primaryColor,
+      splashColor: Theme.of(context).primaryColorLight.withOpacity(0.3),
+      highlightColor: Theme.of(context).accentColor,
+      elevation: 0,
+      highlightElevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20.0)
+      ),
+      onPressed: _submit,
     );
   }
 
-  Widget _switchButton() {
+  Widget _tempButton() {
     return Text.rich(
       TextSpan(
-        text: _formMode == FormMode.LOGIN 
-          ? 'Pas de compte ? '
-          : 'Déjà un compte ? ',
+        text: _formMode == FormMode.LOGIN
+            ? 'Pas de compte ? '
+            : 'Déjà un compte ? ',
         style: TextStyle(fontSize: 12.0, color: Colors.grey[600]),
         children: <TextSpan>[
           TextSpan(
-            text: _formMode == FormMode.LOGIN 
-              ? 'Inscrivez vous !'
-              : 'Connectez vous !',
-            style: TextStyle(decoration:TextDecoration.underline,),
+            text: _formMode == FormMode.LOGIN
+                ? 'Inscrivez vous !'
+                : 'Connectez vous !',
+            style: TextStyle(
+              decoration: TextDecoration.underline,
+            ),
             recognizer: TapGestureRecognizer()
-                  ..onTap = _formMode == FormMode.SIGNUP
-                    ? _changeFormToLogin
-                    : _changeFormToSignUp,
+              ..onTap = _formMode == FormMode.SIGNUP
+                  ? _changeFormToLogin
+                  : _changeFormToSignUp,
           ),
         ],
       ),
@@ -293,11 +327,39 @@ class _AuthScreenState extends State<AuthScreen> with Validators{
     );
   }
 
+  Widget _switchButton() {
+    return MaterialButton(
+      child: Text(
+        _formMode == FormMode.LOGIN
+            ? 'Pas de compte ? '
+            : 'Déjà un compte ? ',
+        style: TextStyle(
+          color: Theme.of(context).disabledColor,
+        ),
+      ),
+      splashColor: Theme.of(context).primaryColorLight.withOpacity(0.3),
+      highlightColor: Colors.transparent,
+      height: 42.0,
+      minWidth: MediaQuery.of(context).size.width,
+      // highlightColor: Theme.of(context).accentColor,
+      elevation: 0,
+      highlightElevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20.0)
+      ),
+      onPressed: _formMode == FormMode.SIGNUP
+        ? _changeFormToLogin
+        : _changeFormToSignUp,
+    );
+  }
+
   Widget _showProgress() {
     if (_isLoading) {
       return Center(child: CircularProgressIndicator());
     }
-    return Container(height: 0.0, width: 0.0,);
+    return Container(
+      height: 0.0,
+      width: 0.0,
+    );
   }
-
 }
