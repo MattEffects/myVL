@@ -4,6 +4,8 @@ import '../widgets/animated_bottom_bar.dart';
 import '../blocs/auth_provider.dart';
 import '../blocs/bloc_provider.dart';
 import '../blocs/state_bloc.dart';
+import '../models/user_model.dart';
+import '../models/school_model.dart';
 import 'activity_screens/news_screen.dart';
 import 'activity_screens/survey_screen.dart';
 import 'activity_screens/feedback_screen.dart';
@@ -111,7 +113,7 @@ class _ActivityPageState extends State<ActivityPage> {
   }
 
   _buildDrawer() {
-    final AuthBase auth = AuthProvider.of(context).auth;
+    final StateBloc bloc = BlocProvider.of<StateBloc>(context);
     final _tilesPadding = EdgeInsets.symmetric(
       horizontal: MediaQuery.of(context).size.width / 9,
     );
@@ -128,46 +130,49 @@ class _ActivityPageState extends State<ActivityPage> {
           child: Column(
             mainAxisSize: MainAxisSize.max,
             children: <Widget>[
-              Expanded(
-                flex: 3,
-                child: Container(
-                  width: double.infinity,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.max,
-                    children: <Widget>[
-                      Expanded(
-                        child: AspectRatio(
-                          aspectRatio: 1.0,
-                          child: CircleAvatar(
-                            backgroundImage:
-                                AssetImage('assets/bg_imgs/girl_book.jpg'),
-                            // radius: 80,
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: 15.0),
-                      FutureBuilder<String>(
-                          future: auth.userName(),
-                          builder: (BuildContext context,
-                              AsyncSnapshot<String> snapshot) {
-                            return Text(
-                              '${snapshot.data}',
-                              style: TextStyle(
-                                fontSize: 18.0,
-                                fontWeight: FontWeight.w500,
+              StreamBuilder<StudentUser>(
+                stream: bloc.activeUser,
+                builder: (context, snapshot) {
+                  return Expanded(
+                    flex: 3,
+                    child: (!snapshot.hasData) 
+                    ? Center(child: CircularProgressIndicator(),)
+                    : Container(
+                      width: double.infinity,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.max,
+                        children: <Widget>[
+                          Expanded(
+                            child: AspectRatio(
+                              aspectRatio: 1.0,
+                              child: CircleAvatar(
+                                backgroundImage: (snapshot.data.photoUrl == null)
+                                  ? AssetImage('assets/bg_imgs/girl_book.jpg')
+                                  : NetworkImage(snapshot.data.photoUrl),
+                                // radius: 80,
                               ),
-                            );
-                          }),
-                      SizedBox(height: 5.0),
-                      Text(
-                        'Jean Jaurès - TS',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w300,
-                        ),
+                            ),
+                          ),
+                          SizedBox(height: 15.0),
+                          Text(
+                            '${snapshot.data.fullName}',
+                            style: TextStyle(
+                              fontSize: 18.0,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          SizedBox(height: 5.0),
+                          Text(
+                            '${snapshot.data.schoolName} - ${snapshot.data.classroomName}',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w300,
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                ),
+                    ),
+                  );
+                }
               ),
               SizedBox(
                 height: MediaQuery.of(context).size.height / 40,
