@@ -159,7 +159,7 @@ class _IdScreenState extends State<IdScreen> with Validators {
         'speciality': _speciality},
         merge: false,
       );
-      bloc.activeUser.listen((user) => print(user.displayName));
+      bloc.activeUserStream.listen((user) => print(user.displayName));
       // StudentUser activeStudentUser = StudentUser(
       //   id: activeFireUser.uid,
       //   firstName: _firstName,

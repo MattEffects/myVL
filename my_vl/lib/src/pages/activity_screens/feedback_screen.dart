@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:my_vl/src/blocs/bloc_provider.dart';
+import 'package:my_vl/src/blocs/state_bloc.dart';
+import '../../models/user_model.dart';
 
 enum Destination {
   CVL,
@@ -12,10 +16,12 @@ class FeedbackScreen extends StatefulWidget {
 }
 
 class _FeedbackScreenState extends State<FeedbackScreen> {
-  Destination _destination = Destination.CVL;
+  String _destination = 'CVL';
   String t = "Vous n'êtes pas anonyme";
   bool checkBoxState = false;
   final _formKey = GlobalKey<FormState>();
+  String title = '';
+  String message = '';
 
   @override
   Widget build(BuildContext context) {
@@ -46,13 +52,13 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
               'CVL',
               style: TextStyle(
                 fontSize: 18,
-                decoration: (_destination == Destination.CVL)
+                decoration: (_destination == 'CVL')
                     ? TextDecoration.underline
                     : null,
               ),
             ),
-            onPressed: () => _toggleDestination(Destination.CVL),
-            textColor: (_destination == Destination.CVL)
+            onPressed: () => _toggleDestination('CVL'),
+            textColor: (_destination == 'CVL')
                 ? Theme.of(context).primaryColor
                 : Theme.of(context).disabledColor,
           ),
@@ -61,13 +67,13 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
               'Délégués',
               style: TextStyle(
                 fontSize: 18,
-                decoration: (_destination == Destination.DELEGUES)
+                decoration: (_destination == 'DELEGUES')
                     ? TextDecoration.underline
                     : null,
               ),
             ),
-            onPressed: () => _toggleDestination(Destination.DELEGUES),
-            textColor: (_destination == Destination.DELEGUES)
+            onPressed: () => _toggleDestination('DELEGUES'),
+            textColor: (_destination == 'DELEGUES')
                 ? Theme.of(context).primaryColor
                 : Theme.of(context).disabledColor,
           ),
@@ -76,13 +82,13 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
               'Devs',
               style: TextStyle(
                 fontSize: 18,
-                decoration: (_destination == Destination.DEVS)
+                decoration: (_destination == 'DEVS')
                     ? TextDecoration.underline
                     : null,
               ),
             ),
-            onPressed: () => _toggleDestination(Destination.DEVS),
-            textColor: (_destination == Destination.DEVS)
+            onPressed: () => _toggleDestination('DEVS'),
+            textColor: (_destination == 'DEVS')
                 ? Theme.of(context).primaryColor
                 : Theme.of(context).disabledColor,
           ),
@@ -106,7 +112,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                 SizedBox(height: 20),
                 _anonymous(),
                 SizedBox(height: 20),
-                _submit(),
+                _submitButton(),
                 // Padding(
                 //   padding: const EdgeInsets.symmetric(vertical: 20.0),
                 // )
@@ -129,7 +135,8 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
               if (value.isEmpty) {
               return 'Entrez du texte'; 
               }
-            }
+            },
+      onSaved: (value) => title = value,
     );
   }
   
@@ -147,6 +154,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
             return 'Entrez du texte';
           }
         },
+      onSaved: (value) => message = value,
       );
   }       
 
@@ -185,14 +193,27 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
             );
   }
 
-  void _submit() {
+  void _submit() async {
     if (_formKey.currentState.validate()) {
-        Scaffold.of(context).showSnackBar(SnackBar(content: Text('Merci de votre investissement !')));
+      _formKey.currentState.save();
+      Firestore firestore = Firestore.instance;
+      StateBloc bloc = BlocProvider.of<StateBloc>(context);
+      StudentUser student = await bloc.activeUser;
+      await firestore.collection('feedbacks').document().setData(
+        {'title': title,
+        'message': message,
+        'student': checkBoxState ? null : '${student.firstName} ${student.lastName}',
+        'studentClassroom': checkBoxState ? null : student.classroomName,
+        'studentId': checkBoxState ? null : student.id,
+        'destination': _destination}
+      );
+      _formKey.currentState.reset();
+      Scaffold.of(context).showSnackBar(SnackBar(content: Text('Merci de votre investissement !')));
     }
   }
 
 
-void _toggleDestination(Destination destination) {
+void _toggleDestination(String destination) {
     setState(() => _destination = destination);}
 
 }

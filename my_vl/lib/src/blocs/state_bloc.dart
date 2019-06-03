@@ -11,7 +11,8 @@ class StateBloc implements BlocBase {
 
   // Getters de lecture des données des streams
   Stream<dynamic> get darkMode => _darkMode.stream;
-  Stream<StudentUser> get activeUser => _activeUser.stream;
+  Stream<StudentUser> get activeUserStream => _activeUser.stream;
+  Future<StudentUser> get activeUser => _activeUser.stream.first.then((value) => value);
 
   // Getters d'ajout de données aux streams
   Function(bool) get toggleDarkMode => _darkMode.sink.add;

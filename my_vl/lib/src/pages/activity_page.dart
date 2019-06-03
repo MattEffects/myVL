@@ -131,7 +131,7 @@ class _ActivityPageState extends State<ActivityPage> {
             mainAxisSize: MainAxisSize.max,
             children: <Widget>[
               StreamBuilder<StudentUser>(
-                stream: bloc.activeUser,
+                stream: bloc.activeUserStream,
                 builder: (context, snapshot) {
                   return Expanded(
                     flex: 3,
