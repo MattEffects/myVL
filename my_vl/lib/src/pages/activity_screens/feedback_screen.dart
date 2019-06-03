@@ -17,25 +17,6 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
   bool checkBoxState = false;
   final _formKey = GlobalKey<FormState>();
 
-
-
-  Widget checkbox(String title, bool boolValue) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: <Widget>[
-        Text(title),
-        Checkbox(
-          value: checkBoxState,
-          onChanged: (value) {
-            setState(() {
-             checkBoxState = value; 
-            });
-          },
-        )
-      ],
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -46,8 +27,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
             mainAxisSize: MainAxisSize.max,
             children: <Widget>[
               _buttonRow(),
-              _body(),
-              _submit(), 
+              _body(), 
             ],
           ),
         ),
@@ -118,18 +98,18 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
           child: Form(
             key: _formKey,
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
-                SizedBox(height: 20),
                 _titelfield(),
-                SizedBox(height: 50),
+                SizedBox(height: 20),
                 _messagefield(),
-                SizedBox(height: 40),
+                SizedBox(height: 20),
                 _anonymous(),
                 SizedBox(height: 20),
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 20.0),
-                )
+                _submit(),
+                // Padding(
+                //   padding: const EdgeInsets.symmetric(vertical: 20.0),
+                // )
               ],
             ),
           )
@@ -142,7 +122,8 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
       minLines: 1,
       maxLines: 1,
         decoration: InputDecoration (
-          labelText: 'Titre du message'
+          border: OutlineInputBorder(),
+          labelText: 'Titre du message',
         ),
             validator: (value) {
               if (value.isEmpty) {
@@ -158,6 +139,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
       minLines: 5,
       maxLines: 10,
       decoration: InputDecoration (
+        border: OutlineInputBorder(),
           labelText: 'Votre message'
         ),
         validator: (value) {
@@ -180,19 +162,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                   );
   }
 
-  Widget _submit() { 
-    return RaisedButton(
-            child: Text('Envoyer'),
-              onPressed: () {
-                if (_formKey.currentState.validate()) {
-                  Scaffold.of(context)
-                      .showSnackBar(SnackBar(content: Text('Merci de votre investissement !')));
-                }
-              }
-            );
-  }
-
-void something() { 
+  void something() { 
   setState(() { 
     if (checkBoxState) { 
       t = "Vous n'êtes pas anonyme";
@@ -205,9 +175,25 @@ void something() {
   ); 
 }
 
+  Widget _submitButton() { 
+    return FlatButton.icon(
+            label: Text('Envoyer'),
+            icon: Icon(Icons.send),
+            color: Theme.of(context).primaryColor,
+            textColor: Colors.white,
+              onPressed: _submit,
+            );
+  }
+
+  void _submit() {
+    if (_formKey.currentState.validate()) {
+        Scaffold.of(context).showSnackBar(SnackBar(content: Text('Merci de votre investissement !')));
+    }
+  }
+
+
 void _toggleDestination(Destination destination) {
     setState(() => _destination = destination);}
-
 
 }
 
