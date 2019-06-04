@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:my_vl/src/pages/auth_screen.dart';
 import 'dart:ui';
 
@@ -17,76 +16,67 @@ class _HelloPageState extends State<HelloPage>
   var _bgAnimationDuration = Duration(milliseconds: 200);
   var _mainAnimationDuration = Duration(milliseconds: 300);
   // Initialise l'état de l'écran de bienvenue
-  bool welcomeMode = true;
-  Animation<double> textAlignAnimation;
-  Animation<double> textSizeAnimation;
-  Animation<double> buttonAnimation;
-  Animation<double> blurAnimation;
-  AnimationController mainAnimationController;
-  Color color1 = Colors.red;
-  Color color2 = Colors.orange;
+  bool _welcomeMode = true;
+  Animation<double> _textAlignAnimation;
+  Animation<double> _textSizeAnimation;
+  Animation<double> _buttonAnimation;
+  Animation<double> _blurAnimation;
+  AnimationController _mainAnimationController;
+  Color _color1 = Colors.red;
+  Color _color2 = Colors.orange;
 
+  // Initialisation des contrôleurs de l'animation avec l'initialisation du State
   @override
   void initState() {
+    // Appelle la fonction initState de la classe que notre state étend
     super.initState();
 
-    mainAnimationController = AnimationController(
+    _mainAnimationController = AnimationController(
       duration: _mainAnimationDuration,
       vsync: this,
     );
-    textAlignAnimation = Tween(begin: 0.0, end: -4 / 5).animate(CurvedAnimation(
-      parent: mainAnimationController,
+    _textAlignAnimation = Tween(begin: 0.0, end: -4 / 5).animate(CurvedAnimation(
+      parent: _mainAnimationController,
       curve: Curves.easeIn,
     ));
-    textSizeAnimation = Tween(begin: 60.0, end: 50.0).animate(CurvedAnimation(
-        parent: mainAnimationController,
-        curve: Interval(
-          0.0,
-          1.0,
-          curve: Curves.easeIn,
-        )));
-    blurAnimation = Tween(begin: 5.0, end: 0.0).animate(CurvedAnimation(
-      parent: mainAnimationController,
+    _textSizeAnimation = Tween(begin: 60.0, end: 50.0).animate(CurvedAnimation(
+        parent: _mainAnimationController,
+        curve: Curves.easeIn,
+    ));
+    _blurAnimation = Tween(begin: 5.0, end: 0.0).animate(CurvedAnimation(
+      parent: _mainAnimationController,
       curve: Curves.easeIn,
     ));
-  }
-
-  getSize(GlobalKey key) {
-    final RenderBox renderBoxRed = key.currentContext.findRenderObject();
-    final size = renderBoxRed.size;
-    return size;
+    _buttonAnimation = Tween(begin: -50.0, end: 6.0)
+        .animate(CurvedAnimation(
+      parent: _mainAnimationController,
+      curve: Curves.easeIn,
+    ));
   }
 
   @override
   Widget build(BuildContext context) {
-    double minButtonPosition = -50.0;
-    double maxButtonPosition = 6.0;
-    buttonAnimation = Tween(begin: minButtonPosition, end: maxButtonPosition)
-        .animate(CurvedAnimation(
-      parent: mainAnimationController,
-      curve: Curves.easeIn,
-    ));
     return Scaffold(
       body: Stack(
         children: <Widget>[
           // Génère une image de fond
-          _backgroundImage(AssetImage('assets/bg_imgs/girl_book.jpg')),
+          _backgroundImage(AssetImage('assets/bg_imgs/girl_book_1920.jpg')),
           // Affiche le fond coloré animé avec une opacité modifiable
           _colouredBackground(),
           // Applique un flou animé sur les widgets dessous
-          _animatedBlur(animation: blurAnimation),
+          _animatedBlur(animation: _blurAnimation),
           // Affiche le titre et le sous titre animés de l'écran de bienvenue
-          _movingText(
+          _movingLogo(
             title: 'MyVL',
             subtitle: 'Connect. Speak. Grow.',
-            animation: textAlignAnimation,
+            animation: _textAlignAnimation,
           ),
           // Permet la détection d'interactions utilisateurs
           // avec l'entièreté de l'écran de bienvenue
           Positioned.fill(
             child: GestureDetector(
               // Applique la fonction onTap après un 'tap' de l'utilisateur
-              onTap: onTap,
+              onTap: _onTap,
             ),
           ),
           // Affiche le bouton d'inscription
@@ -107,15 +97,19 @@ class _HelloPageState extends State<HelloPage>
     );
   }
 
+  // Retourne un fond dégradé
+  // dont les couleurs changent lors d'un clic
+  // (Appelée par build())
   Widget _colouredBackground({double opacity = 0.35}) {
     return Opacity(
       opacity: opacity,
+      // L'AnimatedCntainer
       child: AnimatedContainer(
         duration: _bgAnimationDuration,
         curve: Curves.easeIn,
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [color1, color2],
+            colors: [_color1, _color2],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -123,8 +117,12 @@ class _HelloPageState extends State<HelloPage>
       ),
     );
   }
-
-  Widget _animatedBlur({@required Listenable animation}) {
+  // Retourne un filtre de flou
+  // dont l'intensité s'anime lors d'un clic
+  // (Appelée par build())
+  Widget _animatedBlur({@required Animation<double> animation}) {
+    // L'AnimatedBuilder anime le widget dans la propriété 'builder:'
+    // en fonction d'une animation définie au préalable
     return AnimatedBuilder(
         animation: animation,
         child: Container(
@@ -134,22 +132,26 @@ class _HelloPageState extends State<HelloPage>
           return Positioned.fill(
             child: BackdropFilter(
               filter: ImageFilter.blur(
-                  sigmaX: blurAnimation.value, sigmaY: blurAnimation.value),
+                  sigmaX: _blurAnimation.value, sigmaY: _blurAnimation.value),
               child: child,
             ),
           );
         });
   }
-
-  Widget _movingText(
-      {@required Listenable animation,
+  // Retourne le logo
+  // dont la position s'anime lors d'un clic
+  // (Appelée par build())
+  Widget _movingLogo(
+      {@required Animation<double> animation,
       @required String title,
       @required String subtitle}) {
+    // L'AnimatedBuilder anime le widget dans la propriété 'builder:'
+    // en fonction d'une animation définie au préalable
     return AnimatedBuilder(
       animation: animation,
       builder: (context, child) {
         return Align(
-          alignment: Alignment(0, textAlignAnimation.value),
+          alignment: Alignment(0, _textAlignAnimation.value),
           child: Hero(
             tag: 'TextLogo',
             child: Column(
@@ -159,16 +161,20 @@ class _HelloPageState extends State<HelloPage>
                   title,
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: textSizeAnimation.value,
+                    fontSize: _textSizeAnimation.value,
                     fontWeight: FontWeight.bold,
+                    fontFamily: "Roboto",
+                    decoration: TextDecoration.none,
                   ),
                 ),
                 Text(
                   subtitle,
                   style: TextStyle(
                     color: Colors.white70,
-                    fontSize: textSizeAnimation.value / 4,
+                    fontSize: _textSizeAnimation.value / 4,
                     fontWeight: FontWeight.bold,
+                    fontFamily: "Roboto",
+                    decoration: TextDecoration.none,
                   ),
                 ),
               ],
@@ -179,12 +185,15 @@ class _HelloPageState extends State<HelloPage>
     );
   }
 
+  // Retourne le bouton "S'inscrire"
+  // dont la position s'anime lors d'un clic
+  // (Appelée par build())
   Widget _startButton() {
     return AnimatedBuilder(
-      animation: buttonAnimation,
+      animation: _buttonAnimation,
       builder: (context, child) {
         return Positioned(
-          bottom: buttonAnimation.value,
+          bottom: _buttonAnimation.value,
           child: Container(
             width: MediaQuery.of(context).size.width,
             alignment: Alignment.center,
@@ -192,6 +201,7 @@ class _HelloPageState extends State<HelloPage>
               icon: Icon(Icons.person),
               label: Text('S\'inscrire'),
               textColor: Colors.white,
+              // Appelle la fonction _start() pour ouvrir la page AuthScreen()
               onPressed: _start,
             ),
           ),
@@ -200,6 +210,8 @@ class _HelloPageState extends State<HelloPage>
     );
   }
 
+  // Bascule vers la page AuthScreen()
+  // (Appelée par _startButton())
   void _start() {
     Navigator.of(context).push(
       PageRouteBuilder(
@@ -208,9 +220,7 @@ class _HelloPageState extends State<HelloPage>
         pageBuilder: (context, animation, animation2) {
           return AuthScreen();
         },
-        transitionsBuilder: (_, animation, animation2, child) {
-          final curvedAnim = CurvedAnimation(parent: animation, curve: Curves.easeIn);
-          final curvedAnim2 = CurvedAnimation(parent: animation2, curve: Curves.easeIn);
+        transitionsBuilder: (context, animation, animation2, child) {
           return SlideTransition(
             position: Tween<Offset>(begin: Offset(1.0, 0.0), end: Offset.zero).animate(animation),
             child: SlideTransition(
@@ -223,18 +233,19 @@ class _HelloPageState extends State<HelloPage>
     );
   }
 
-
-  onTap() {
-    if (welcomeMode || !welcomeMode) {
+  // Exécute les animations
+  // (Appelée par le GestureDetector de build())
+  _onTap() {
+    if (_welcomeMode || !_welcomeMode) {
       setState(() {
-        color1 = (color1 == Colors.red) ? Colors.blue : Colors.red;
-        color2 = (color2 == Colors.orange) ? Colors.lightBlue : Colors.orange;
-        if (mainAnimationController.status == AnimationStatus.completed) {
-          mainAnimationController.reverse();
-          welcomeMode = true;
+        _color1 = (_color1 == Colors.red) ? Colors.blue[600] : Colors.red;
+        _color2 = (_color2 == Colors.orange) ? Colors.lightBlue[200] : Colors.orange;
+        if (_mainAnimationController.status == AnimationStatus.completed) {
+          _mainAnimationController.reverse();
+          _welcomeMode = true;
         } else {
-          mainAnimationController.forward();
-          welcomeMode = false;
+          _mainAnimationController.forward();
+          _welcomeMode = false;
         }
       });
     }

@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/gestures.dart';
 import 'package:my_vl/src/blocs/auth_provider.dart';
-import '../mixins/validators.dart';
-import '../services/authentication.dart';
+import 'package:my_vl/src/mixins/validators.dart';
+import 'package:my_vl/src/services/authentication.dart';
 
 enum FormMode { LOGIN, SIGNUP }
 
@@ -196,6 +195,8 @@ class _AuthScreenState extends State<AuthScreen> with Validators {
               color: Colors.grey,
               fontSize: 50,
               fontWeight: FontWeight.bold,
+              fontFamily: "Roboto",
+              decoration: TextDecoration.none,
             ),
           ),
           Text(
@@ -204,6 +205,8 @@ class _AuthScreenState extends State<AuthScreen> with Validators {
               color: Colors.grey.withOpacity(0.7),
               fontSize: 50 / 4,
               fontWeight: FontWeight.bold,
+              fontFamily: "Roboto",
+              decoration: TextDecoration.none,
             ),
           ),
         ],
@@ -301,38 +304,12 @@ class _AuthScreenState extends State<AuthScreen> with Validators {
     );
   }
 
-  Widget _tempButton() {
-    return Text.rich(
-      TextSpan(
-        text: _formMode == FormMode.LOGIN
-            ? 'Pas de compte ? '
-            : 'Déjà un compte ? ',
-        style: TextStyle(fontSize: 12.0, color: Colors.grey[600]),
-        children: <TextSpan>[
-          TextSpan(
-            text: _formMode == FormMode.LOGIN
-                ? 'Inscrivez vous !'
-                : 'Connectez vous !',
-            style: TextStyle(
-              decoration: TextDecoration.underline,
-            ),
-            recognizer: TapGestureRecognizer()
-              ..onTap = _formMode == FormMode.SIGNUP
-                  ? _changeFormToLogin
-                  : _changeFormToSignUp,
-          ),
-        ],
-      ),
-      textAlign: TextAlign.left,
-    );
-  }
-
   Widget _switchButton() {
     return MaterialButton(
       child: Text(
         _formMode == FormMode.LOGIN
-            ? 'Pas de compte ? '
-            : 'Déjà un compte ? ',
+            ? 'Pas de compte ?'
+            : 'Déjà un compte ?',
         style: TextStyle(
           color: Theme.of(context).disabledColor,
         ),

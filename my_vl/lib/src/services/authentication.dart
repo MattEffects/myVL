@@ -1,7 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../models/school_model.dart';
-import '../models/user_model.dart';
+import 'package:my_vl/src/models/user_model.dart';
 
 // On crée la classe abstraite BaseAuth
 // Qui définit les attributs nécessaires à une classe d'authentification
@@ -11,7 +10,6 @@ abstract class AuthBase {
   Future<String> signUpWithEmailAndPassword(String email, String password);
   Future<FirebaseUser> currentUser();
   Future<String> userName();
-  // Future<void> reload();
   Future<void> signOut();
 }
 
@@ -28,18 +26,14 @@ class Auth implements AuthBase {
         .map((FirebaseUser user) => user);
   }
 
-  Future<String> signInWithEmailAndPassword(
-      String email, String password) async {
-    // UserUpdateInfo updateInfo = UserUpdateInfo();
-    // updateInfo.displayName = 'Noémie Currato';
+  Future<String> signInWithEmailAndPassword(String email, String password) async {
 
     FirebaseUser user = await _firebaseAuth.signInWithEmailAndPassword(
         email: email, password: password);
     return user.uid;
   }
 
-  Future<String> signUpWithEmailAndPassword(
-      String email, String password) async {
+  Future<String> signUpWithEmailAndPassword(String email, String password) async {
     FirebaseUser user = await _firebaseAuth.createUserWithEmailAndPassword(
         email: email, password: password);
     return user.uid;
@@ -85,22 +79,6 @@ class Auth implements AuthBase {
     }
     return null;
   }
-
-  // Future<void> reload() async {
-  //   UserUpdateInfo updateInfo = UserUpdateInfo();
-  //   updateInfo.displayName = 'ZBEUB';
-  //
-  //   updateName(FirebaseUser user, String name) async {
-  //     await user.updateProfile(updateInfo);
-  //     await user.reload();
-  //   }
-  //
-  //   FirebaseUser user = await _firebaseAuth.currentUser();
-  //   if (user != null) {
-  //     await updateName(user, 'Oui');
-  //   }
-  //
-  // }
 
   Future<void> signOut() async {
     return _firebaseAuth.signOut();

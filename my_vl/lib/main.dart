@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
-import 'src/app.dart';
+import 'package:my_vl/src/app.dart';
 
+// Fonction initiale du programme Dart
 void main() {
+  // Désactivation de l'interface système par dessus notre application
   SystemChrome.setEnabledSystemUIOverlays([]);
-  // SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-  // statusBarColor: Colors.black.withOpacity(0.0),
-  // ));
-  debugPaintSizeEnabled = false;
+  // Fonction Flutterqui lance l'application
   runApp(App());
 }

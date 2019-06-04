@@ -5,8 +5,10 @@ class SettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Paramètres'),
+        title: Text('Paramètres', style: TextStyle(color: Theme.of(context).primaryColor)),
         centerTitle: true,
+        backgroundColor: Theme.of(context).canvasColor,
+        elevation: 0,
       ),
     );
   }

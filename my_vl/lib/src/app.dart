@@ -1,22 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:my_vl/src/services/authentication.dart';
-import 'blocs/auth_provider.dart';
-import 'blocs/state_bloc.dart';
-import 'blocs/bloc_provider.dart';
-import 'pages/root_page.dart';
-import 'pages/activity_page.dart';
-import 'pages/activity_screens/restauration_screen.dart';
-import 'pages/activity_screens/settings_screen.dart';
+import 'package:my_vl/src/blocs/auth_provider.dart';
+import 'package:my_vl/src/blocs/state_bloc.dart';
+import 'package:my_vl/src/blocs/bloc_provider.dart';
+import 'package:my_vl/src/pages/root_page.dart';
 
+// Notre application
 class App extends StatelessWidget {
+  // Création du bloc de gestion du GlobalState de l'application
   final StateBloc bloc = StateBloc();
+  // Référence au service d'authentification de l'application
+  final AuthBase auth = Auth();
   @override
   Widget build(BuildContext context) {
+    // Création d'un BlocProvider() qui donne accès au bloc
+    // à toute sa descendance
     return BlocProvider<StateBloc>(
       bloc: bloc,
+      // Création d'un AuthProvider() qui donne accès au
+      // service d'authentification à toute sa descendance
       child: AuthProvider(
-        auth: Auth(),
-        child: StreamBuilder<dynamic>(
+        auth: auth,
+        // StreamBuilder qui gère le mode nuit
+        child: StreamBuilder(
           initialData: false,
           stream: bloc.darkMode,
           builder: (context, snapshot) {
@@ -24,20 +30,7 @@ class App extends StatelessWidget {
               theme: snapshot.data ? ThemeData.dark() : ThemeData(),
               debugShowCheckedModeBanner: false,
               title: 'MyVL',
-              routes: <String, WidgetBuilder>{
-                '/': (BuildContext context) {
-                  return RootPage();
-                },
-                '/activity': (BuildContext context) {
-                  return ActivityPage();
-                },
-                '/restauration': (BuildContext context) {
-                  return RestaurationScreen();
-                },
-                '/settings': (BuildContext context) {
-                  return SettingsScreen();
-                },
-              },
+              home: RootPage(),
             );
           }
         ),

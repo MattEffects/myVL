@@ -1,8 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:my_vl/src/models/school_model.dart';
 
-import 'school_model.dart';
+// TODO : Ajouter l'attribution d'une School() et d'une Classroom()
 
 class StudentUser {
 
@@ -13,8 +13,8 @@ class StudentUser {
   final String email;
   final bool isEmailVerified;
   final String photoUrl;
-  //final School school;
-  //final Classroom classroom;
+  // School school;
+  // Classroom classroom;
   final String schoolName;
   final String classroomName;
   final Level level;
@@ -34,7 +34,8 @@ class StudentUser {
   //   @required this.firebaseUser
   // });
 
-  StudentUser.fromDocument(DocumentSnapshot doc, FirebaseUser activeFirebaseUser)
+  // Construction d'un objet StudentUser() via un document Firestore
+  StudentUser.fromFirestoreDocument(DocumentSnapshot doc, FirebaseUser activeFirebaseUser)
     : id = doc.documentID,
       firstName = doc.data['firstName'],
       lastName = doc.data['lastName'],
@@ -42,69 +43,70 @@ class StudentUser {
       email = doc.data['email'],
       isEmailVerified = doc.data['isEmailVerified'],
       photoUrl = doc.data['photoUrl'],
+      // school = schools.singleWhere((school) => school.name == doc.data['schoolName']),
       schoolName = doc.data['schoolName'],
+      // classroom = schools.singleWhere((school) => school.name == doc.data['schoolName'])
+      //   .classrooms.singleWhere((classroom) => classroom.name == doc.data['classroomName']),
       classroomName = doc.data['classroomName'],
       level = _getLevel(doc.data['level']),
       pathway = _getPathway(doc.data['pathway']),
       speciality = _getSpeciality(doc.data['speciality']),
       firebaseUser = activeFirebaseUser;
 
+  // Getter qui renvoie, à partir des prénom et nom d'un étudiant, son nom complet
+  String get fullName => '$firstName $lastName';
+
   static Level _getLevel(level) {
     switch (level) {
       case 'seconde':
         return Level.SECONDE;
-        break;
       case 'premiere':
         return Level.PREMIERE;
-        break;
       case 'terminale':
         return Level.TERMINALE;
-        break;
       default:
         return Level.UNKNOWN;
-        break;
     }
   }
 
+  // Retourne la filière de l'élève
+  // sous forme d'une valeur de l'enum Pathway
+  // (Appelée par StudentUser.fromFirestoreDocument())
   static Pathway _getPathway(pathway) {
     switch (pathway) {
       case 'S':
         return Pathway.S;
-        break;
       case 'ES':
         return Pathway.ES;
-        break;
       case 'L':
         return Pathway.L;
-        break;
       case 'STMG':
         return Pathway.STMG;
-        break;
       default:
         return Pathway.UNKNOWN;
-        break;
     }
   }
 
+  // Retourne la filière de l'élève
+  // sous forme d'une valeur de l'enum Speciality
+  // (Appelée par StudentUser.fromFirestoreDocument())
   static Speciality _getSpeciality(speciality) {
     switch (speciality) {
       case 'ISN':
         return Speciality.ISN;
-        break;
       case 'SVT':
         return Speciality.SVT;
-        break;
       default:
         return Speciality.UNKNOWN;
-        break;
     }
   }
 
-  String get fullName => '$firstName $lastName';
+  // Le texte renvoyé lors de l'interpolation d'un StudentUser() avec un String
   String toString() {
     return '$firstName $lastName';
   }
 
+  // Un retour plus complet pour l'identification d'erreurs
   String toStringDebug() {
     String string = '';
     string += 'id: $id';

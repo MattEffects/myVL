@@ -3,11 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:my_vl/src/blocs/auth_provider.dart';
 import 'package:my_vl/src/blocs/bloc_provider.dart';
-import '../blocs/state_bloc.dart';
-import '../services/authentication.dart';
-import '../mixins/validators.dart';
-import '../models/school_model.dart';
-import '../models/user_model.dart';
+import 'package:my_vl/src/blocs/state_bloc.dart';
+import 'package:my_vl/src/services/authentication.dart';
+import 'package:my_vl/src/mixins/validators.dart';
+import 'package:my_vl/src/models/school_model.dart';
 
 class IdScreen extends StatefulWidget {
   @override
@@ -15,26 +14,36 @@ class IdScreen extends StatefulWidget {
 }
 
 class _IdScreenState extends State<IdScreen> with Validators {
-  bool _isLoading = false; // Statut de l'application (chargement ou non)
-  final _formKey = GlobalKey<FormState>(); // Clé référant à notre formulaire
+  // Statut de l'application (chargement ou non)
+  bool _isLoading = false;
+  // Clé référant à notre formulaire
+  final _formKey = GlobalKey<FormState>();
+  // Référence à notre base de données Firestore
   final Firestore firestore = Firestore.instance;
-  bool _autovalidate = false; // Gère la validation auto des champs du formulaire
+  // Gère la validation auto des champs du formulaire
+  bool _autovalidate = false;
+  // Donne une valeur de padding en fonction des dimensions de l'écran
   var _spacing;
+  // Variables nécessaires à la création d'un StudentUser
+  // allant être complétées par le formulaire
   String _firstName = '';
   String _lastName = '';
   School _school;
   Classroom _classroom;
-  String _level;
-  String _pathway;
-  String _speciality;
+  String _level = '';
+  String _pathway = '';
+  String _speciality = '';
   String _errorMessage = '';
+  // Variables nécessaires temporairement
+  // à l'identification des informations Firestore de l'étudiant
   int _schoolIndex;
   int _classroomIndex;
 
   @override
   Widget build(BuildContext context) {
+    // Initialisation de spacing en fonction de la taille de l'écran
     setState(() {
-      _spacing = MediaQuery.of(context).size.width/30;
+      _spacing = MediaQuery.of(context).size.width / 30;
     });
     return Scaffold(
       appBar: AppBar(
@@ -45,29 +54,38 @@ class _IdScreenState extends State<IdScreen> with Validators {
         centerTitle: true,
         backgroundColor: Theme.of(context).canvasColor,
         elevation: 0,
-        iconTheme: IconTheme.of(context).copyWith(color: Theme.of(context).primaryColor),
+        iconTheme: IconTheme.of(context)
+            .copyWith(color: Theme.of(context).primaryColor),
       ),
+      // Lien du rendu de l'écran d'identification avec les données de Firestore
+      // A chaque modification des données de la collection 'school',
+      // le widget sera rendu de nouveau
       body: StreamBuilder<QuerySnapshot>(
-        stream: firestore.collection('schools').snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            var schools = snapshot.data.documents.map((school){
-              return School.fromJson(school.data);
-            }).toList();
-            return Stack(
-              children: <Widget>[
-                _showBody(schools),
-                _showProgress(),
-              ],
-            );
-          }
-          return Center(child: CircularProgressIndicator());
-        }
-      ),
+          stream: firestore.collection('schools').snapshots(),
+          builder: (context, snapshot) {
+            // Affiche l'écran si des données de Firestore ont été reçues
+            if (snapshot.hasData) {
+              var schools = snapshot.data.documents.map((school) {
+                return School.fromJson(school.data);
+              }).toList();
+              return Stack(
+                children: <Widget>[
+                  // Corps de l'écran
+                  _showBody(schools),
+                  // Permet la superposition d'un indicateur de chargement
+                  _showProgress(),
+                ],
+              );
+            }
+            // Affiche un indicateur de chargement en attendant les données de Firestore
+            return Center(child: CircularProgressIndicator());
+          }),
     );
   }
 
-  Widget _showBody(schools) {
+  // Renvoie le corps de l'écran
+  // (Appelée par build(), qui rend le widget)
+  Widget _showBody(List<School> schools) {
     return Center(
       child: SingleChildScrollView(
         padding: EdgeInsets.all(30.0),
@@ -76,18 +94,24 @@ class _IdScreenState extends State<IdScreen> with Validators {
           child: Column(
             mainAxisSize: MainAxisSize.max,
             children: <Widget>[
+              // Affiche le logo
               _showLogo(),
-              SizedBox(height: _spacing*2),
+              SizedBox(height: _spacing * 2),
+              // Affiche un message d'erreur indépendant du formulaire si nécessaire
               _showErrorMessage(_errorMessage),
               SizedBox(height: (_errorMessage.length != 0) ? _spacing : 0),
+              // Affiche les champs Nom et Prénom en ligne
               _nameFields(),
               SizedBox(height: _spacing),
+              // Affiche le sélecteur d'école
               _schoolField(schools),
               SizedBox(height: _spacing),
+              // Affiche le sélecteur de classe
               _classroomField(schools),
-              SizedBox(height: _spacing*2),
+              SizedBox(height: _spacing * 2),
+              // Affiche le bouton de validation
               _submitButton(),
-              // SizedBox(height: _spacing),
+              // Affiche le bouton pour changer le mode du formulaire
               _cancelButton(),
             ],
           ),
@@ -95,17 +119,69 @@ class _IdScreenState extends State<IdScreen> with Validators {
       ),
     );
   }
-  Future<bool> _validateAndSave() async {
+
+  // Crée une entrée dans la base de données 
+  // avec toutes les informations de l'utilisateur
+  // si le formulaire est validé
+  // (Appelée par le _submitButton du formulaire)
+  void _submit() async {
+    final AuthBase auth = AuthProvider.of(context).auth;
+    final StateBloc bloc = BlocProvider.of<StateBloc>(context);
+    // Appelle _validateAndSave() pour valider le formulaire
+    if (_validateAndSave()) {
+      setState(() {
+        _autovalidate = false;
+      });
+      // Récupération du FirebaseUser pour avoir ses informations à disposition
+      FirebaseUser activeFireUser = await auth.currentUser();
+      // Informe d'un chargement
+      setState(() => _isLoading = true);
+      await firestore
+          .collection('users')
+          .document('${activeFireUser.uid}')
+          .setData(
+        {
+          'firstName': _firstName,
+          'lastName': _lastName,
+          'displayName': '$_firstName $_lastName',
+          'email': activeFireUser.email,
+          'isEmailVerified': activeFireUser.isEmailVerified,
+          'photoUrl': activeFireUser.photoUrl,
+          'schoolName': _school.name,
+          'classroomName': _classroom.name,
+          'level': _level,
+          'pathway': _pathway,
+          'speciality': _speciality
+        },
+        merge: false,
+      );
+      setState(() => _isLoading = false);
+      bloc.activeUserStream.listen((user) => print(user.displayName));
+    }
+  }
+  
+  // Valide le formulaire et le sauvegarde
+  // Renvoie un booléen témoignant de l'état de validation
+  // (Executée par _submit(), qui essaie d'envoyer le formulaire)
+  bool _validateAndSave() {
     setState(() {
       _autovalidate = true;
       _errorMessage = '';
     });
     if (_formKey.currentState.validate()) {
+      // Sauvegarde les champs du formulaire dans nos variables
       _formKey.currentState.save();
+      // Création d'une variable témoignant l'existence d'un étudiant
+      // par rapport aux informations qu'il a renseignées
       bool studentExists = false;
+
+      // Utilisation du try pour pallier le cas où le singleWhere
+      // renvoie une erreur à cause de l'existence multiple d'un étudiant dans la db
       try {
-        studentExists = (
-        _classroom.students.singleWhere(
+        // Teste si dans la liste d'étudiant de la classe sélectionnée
+        // un étudiant avec ce nom et ce prénom existe
+        // Assigne à studentExists la valeur booléenne de ce test
+        studentExists = (_classroom.students.singleWhere(
           (student) {
             if (student.firstName == _firstName && student.lastName == _lastName) {
               setState(() => _speciality = student.speciality);
@@ -114,79 +190,57 @@ class _IdScreenState extends State<IdScreen> with Validators {
             return false;
           },
           orElse: () => null,
-          ) != null
-        );
-      } catch(e) {
+        ) != null);
+      } 
+      // Affiche un message dans le cas de l'existence multiple d'un étudiant
+      catch (error) {
         setState(() {
-          _speciality = null;
-          _errorMessage = 'Plusieurs élèves portent ce nom dans la ${_classroom.name} \n Merci de vous adresser à votre établissement';
+          _errorMessage =
+              'Plusieurs élèves portent ce nom dans la ${_classroom.name} \n Merci de vous adresser à votre établissement';
         });
         return false;
       }
+      // Informe que le formulaire est valide
       if (studentExists) {
         return true;
-      } else {
+      }
+      // Informe que le formulaire est invalide
+      // Supprime les données stockées dans les variables
+      // Retourne un message d'erreur
+      else {
+        _cancelData();
         setState(() {
-          _errorMessage = 'Aucun élève à votre nom n\'a été trouvé dans la ${_classroom.name}';
+          _errorMessage =
+              'Aucun élève à votre nom n\'a été trouvé dans la ${_classroom.name}';
         });
         return false;
       }
     }
+    // Informe immédiatement que le formulaire est invalide
+    // dans le cas ou les champs du formulaire ne respectent pas
+    // leurs propres règles de validation
     return false;
   }
 
-  void _submit() async {
-    final AuthBase auth = AuthProvider.of(context).auth;
-    final StateBloc bloc = BlocProvider.of<StateBloc>(context);
-    bool valid = await _validateAndSave();
-    if (valid) {
-      setState(() {
-        _autovalidate = false;
-      });
-      FirebaseUser activeFireUser = await auth.currentUser();
-      setState(() => _isLoading = true);
-      await firestore.collection('users').document('${activeFireUser.uid}').setData(
-        {'firstName': _firstName,
-        'lastName': _lastName,
-        'displayName': '$_firstName $_lastName',
-        'email': activeFireUser.email,
-        'isEmailVerified': activeFireUser.isEmailVerified,
-        'photoUrl': activeFireUser.photoUrl,
-        'schoolName': _school.name,
-        'classroomName': _classroom.name,
-        'level': _level,
-        'pathway': _pathway,
-        'speciality': _speciality},
-        merge: false,
-      );
-      bloc.activeUserStream.listen((user) => print(user.displayName));
-      // StudentUser activeStudentUser = StudentUser(
-      //   id: activeFireUser.uid,
-      //   firstName: _firstName,
-      //   lastName: _lastName,
-      //   email: activeFireUser.email,
-      //   photoUrl: activeFireUser.photoUrl,
-      //   school: _school,
-      //   classroom: _classroom,
-      //   speciality: _speciality,
-      //   firebaseUser: activeFireUser,
-      // );
-      // bloc.changeActiveUser(activeStudentUser);
-      // print(activeStudentUser.toStringDebug());
-    }
-  }
-
+  // Retourne une Row avec les champs nom et prénom
+  // (Appelée par _showBody())
   Widget _nameFields() {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        Expanded(child: _firstNameField(),),
+        Expanded(
+          child: _firstNameField(),
+        ),
         SizedBox(width: _spacing),
-        Expanded(child: _lastNameField(),),
+        Expanded(
+          child: _lastNameField(),
+        ),
       ],
     );
   }
 
+  // Retourne le champ de saisie du prénom
+  // (Appelée par _nameFields())
   Widget _firstNameField() {
     return TextFormField(
       maxLines: 1,
@@ -203,6 +257,8 @@ class _IdScreenState extends State<IdScreen> with Validators {
     );
   }
 
+  // Retourne le champ de saisie du nom
+  // (Appelée par _nameFields())
   Widget _lastNameField() {
     return TextFormField(
       maxLines: 1,
@@ -219,46 +275,73 @@ class _IdScreenState extends State<IdScreen> with Validators {
     );
   }
 
+  // Retourne le sélecteur d'école
+  // (Exéxutée par _showBody())
   Widget _schoolField(List<School> schools) {
     return DropdownButtonFormField(
+      // Convertit la liste de School renvoyées suite à la requête Firestore
+      // en une liste de DropdownMenuItem affichant le nom de l'école
+      // et renvoyant son index dans la liste renseignée
       items: schools.map((School school) {
         return DropdownMenuItem<int>(
           value: schools.indexOf(school),
           child: Text('$school'),
         );
       }).toList(),
-      value: _schoolIndex,
+      // A chaque sélection d'école
       onChanged: (value) {
         setState(() {
+          // Réinitialise l'index de la classe sélectionnée
           _classroomIndex = null;
+          // Assigne à la variable _schoolIndex 
+          // la valeur d'index de l'item sélectionné
           _schoolIndex = value;
         });
       },
+      value: _schoolIndex,
       validator: validateSchool,
       onSaved: (value) => _school = schools[value],
       hint: Text('Établissement'),
       decoration: InputDecoration(
+        // Affiche "Etablissement"
+        // dans le cas où aucune école n'a été sélectionnée
         labelText: (_schoolIndex != null) ? 'Établissement' : '',
         filled: true,
       ),
     );
   }
-
+  // Retourne le sélecteur de classe
+  // (Appelée par _showBody())
   Widget _classroomField(List<School> schools) {
-    var classrooms = (_schoolIndex != null) ? schools[_schoolIndex].classrooms : [];
+    // Crée une liste regroupant les classes de l'école sélectionnée
+    // Si aucune école n'est sélectionnée, la liste est vide
+    List<Classroom> classrooms = (_schoolIndex != null)
+      ? schools[_schoolIndex].classrooms
+      : [];
+
     return DropdownButtonFormField(
-      items: (classrooms.length != 0) ? classrooms.map((classroom) {
-        return DropdownMenuItem(
-          value: classrooms.indexOf(classroom),
-          child: Text('$classroom'),
-        );
-      }).toList() : null,
-      value: _classroomIndex,
+      // SI CLASSROOMS N'EST PAS VIDE
+      // Convertit la liste classroom en une liste de DropdownMenuItem
+      // affichant le nom de la classe
+      // et renvoyant son index dans la liste classroom
+      // SI CLASSROOMS EST VIDE
+      // Renvoie null
+      items: (classrooms.length != 0)
+          ? classrooms.map((classroom) {
+              return DropdownMenuItem(
+                value: classrooms.indexOf(classroom),
+                child: Text('$classroom'),
+              );
+            }).toList()
+          : null,
+      // A chaque sélection de classe
       onChanged: (value) {
         setState(() {
+          // Assigne à la variable _schoolIndex 
           _classroomIndex = value;
         });
       },
+      value: _classroomIndex,
       validator: validateClassroom,
       onSaved: (value) {
         _classroom = classrooms[value];
@@ -267,12 +350,16 @@ class _IdScreenState extends State<IdScreen> with Validators {
       },
       hint: Text('Classe'),
       decoration: InputDecoration(
+        // Affiche "Classe"
+        // dans le cas où aucune classe n'a été sélectionnée
         labelText: (_classroomIndex != null) ? 'Classe' : '',
         filled: true,
       ),
     );
   }
 
+  // Retourne le bouton de validation
+  // (Appelée par _showBody())
   Widget _submitButton() {
     return MaterialButton(
       child: Text(
@@ -289,15 +376,15 @@ class _IdScreenState extends State<IdScreen> with Validators {
       highlightColor: Theme.of(context).accentColor,
       elevation: 0,
       highlightElevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20.0)
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
+      // Quand appuyé, exécute la fonction _submit()
       onPressed: _submit,
     );
   }
 
+  // Retourne le bouton d'annulation
+  // (Appelée par _showBody())
   Widget _cancelButton() {
-    final AuthBase auth = AuthProvider.of(context).auth;
     return MaterialButton(
       child: Text(
         'Annuler',
@@ -312,39 +399,49 @@ class _IdScreenState extends State<IdScreen> with Validators {
       // highlightColor: Theme.of(context).accentColor,
       elevation: 0,
       highlightElevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20.0)
-      ),
-      onPressed: () {
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: Text('Annuler l\'inscription'),
-              content: Text('Souhaitez-vous réellement annuler la procédure d\'inscription ?'),
-              actions: <Widget>[
-                FlatButton(
-                  child: Text('Annuler'),
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
-                FlatButton(
-                  textColor: Colors.red[400],
-                  child: Text('Continuer'),
-                  onPressed: () async {
-                    FirebaseUser user = await auth.currentUser();
-                    setState(() => _isLoading = true);
-                    await user.delete();
-                    Navigator.of(context).pop();
-                  },
-                ),
-              ],
-            );
-          }
-        );
-      },
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
+      // Quand appuyé, éxécute la fonction _cancel()
+      onPressed: _cancel,
     );
   }
 
+  // Permet à l'utilisateur d'annuler son inscription
+  // et de retourner à la Hello Page
+  // /!\ Supprime le compte Firebase de l'utilisateur
+  // (Appelée par _cancelButton())
+  void _cancel() {
+    final AuthBase auth = AuthProvider.of(context).auth;
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Annuler l\'inscription'),
+            content: Text('Souhaitez-vous réellement annuler la procédure d\'inscription ?'),
+            actions: <Widget>[
+              FlatButton(
+                child: Text('Annuler'),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+              FlatButton(
+                textColor: Colors.red[400],
+                child: Text('Continuer'),
+                onPressed: () async {
+                  FirebaseUser user = await auth.currentUser();
+                  setState(() => _isLoading = true);
+                  // TODO : Prévoir un catch d'erreur dans le cas où l'utilisateur attend trop pour cliquer
+                  // Supprime le compte de l'utilisateur connecté
+                  await user.delete();
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        });
+  }
+
+  // Retourne une zone de texte affichant le message d'erreur actuel
+  // si il y en a un, et un Container vide sinon
+  // (Appelée par _showBody())
   Widget _showErrorMessage(String error) {
     if (error.length > 0 && error != null) {
       return Text(
@@ -364,30 +461,29 @@ class _IdScreenState extends State<IdScreen> with Validators {
     }
   }
 
+  // Retourne le logo
+  // (Appelée par _showBody())
   Widget _showLogo() {
-    return Hero(
-      tag: 'TextLogo',
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          Text(
-            'MyVL',
-            style: TextStyle(
-              color: Colors.grey,
-              fontSize: 50,
-              fontWeight: FontWeight.bold,
-            ),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        Text(
+          'MyVL',
+          style: TextStyle(
+            color: Colors.grey,
+            fontSize: 50,
+            fontWeight: FontWeight.bold,
           ),
-          Text(
-            'Connect. Speak. Grow.',
-            style: TextStyle(
-              color: Colors.grey.withOpacity(0.7),
-              fontSize: 50 / 4,
-              fontWeight: FontWeight.bold,
-            ),
+        ),
+        Text(
+          'Connect. Speak. Grow.',
+          style: TextStyle(
+            color: Colors.grey.withOpacity(0.7),
+            fontSize: 50 / 4,
+            fontWeight: FontWeight.bold,
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -399,5 +495,19 @@ class _IdScreenState extends State<IdScreen> with Validators {
       height: 0.0,
       width: 0.0,
     );
+  }
+
+  // Réinitialise tous les champs d'info de l'utilisateur
+  // (Appelée par _validateAndSave())
+  void _cancelData() {
+    setState(() {
+      _firstName = '';
+      _lastName = '';
+      _school = null;
+      _classroom = null;
+      _level = '';
+      _pathway = '';
+      _speciality = '';
+    });
   }
 }

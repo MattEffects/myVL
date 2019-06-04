@@ -1,8 +1,7 @@
 import 'dart:async';
 import 'package:rxdart/rxdart.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'bloc_provider.dart';
-import '../models/user_model.dart';
+import 'package:my_vl/src/models/user_model.dart';
 
 class StateBloc implements BlocBase {
   // Déclaration des StreamControllers nécessaires

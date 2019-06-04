@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:outline_material_icons/outline_material_icons.dart';
 
 class BarItem {
   String text;
@@ -12,6 +11,13 @@ class BarItem {
     @required this.iconData, 
     this.selectedIconData, 
     this.color = Colors.blue});
+}
+
+
+class BarStyle {
+  final double fontSize, iconSize;
+  final FontWeight fontWeight;
+  const BarStyle({this.fontSize = 14.0, this.iconSize = 25.0, this.fontWeight = FontWeight.w500});
 }
 
 class AnimatedBottomBar extends StatefulWidget {
@@ -31,12 +37,6 @@ class AnimatedBottomBar extends StatefulWidget {
   _AnimatedBottomBarState createState() => _AnimatedBottomBarState();
 }
 
-class BarStyle {
-  final double fontSize, iconSize;
-  final FontWeight fontWeight;
-  const BarStyle({this.fontSize = 14.0, this.iconSize = 25.0, this.fontWeight = FontWeight.w500});
-}
-
 class _AnimatedBottomBarState extends State<AnimatedBottomBar>
     with TickerProviderStateMixin {
   int selectedBarIndex = 0;
@@ -45,12 +45,11 @@ class _AnimatedBottomBarState extends State<AnimatedBottomBar>
   Widget build(BuildContext context) {
     return Material(
       elevation: 0,
-      shadowColor: Colors.transparent,
       color: Colors.transparent,
       child: Padding(
         padding: const EdgeInsets.only(
-          bottom: 16.0,
-          top: 16.0,
+          bottom: 10.0,
+          top: 10.0,
           left: 16.0,
           right: 16.0,
         ),

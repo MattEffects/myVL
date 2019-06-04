@@ -1,3 +1,9 @@
+// Classe de validation des champs de saisie
+// Référencie différentes fonctions pour la validation
+// Ces fonctions prennent comme arguments l'entrée de l'utilisateur
+// et retournent null si l'entrée est conforme
+// ou bien un String d'erreur si ce n'est pas le cas
+
 class Validators {
 
   String validateEmail (String value) {

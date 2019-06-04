@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 
+// Définition de l'interface d'un Bloc
 abstract class BlocBase {
   void dispose();
 }
 
+// Widget qui va nous permettre d'avoir accès à un Bloc
+// depuis n'importe lequel de ses widgets descendants dans la hiérarchie
 class BlocProvider<T extends BlocBase> extends StatefulWidget {
   final T bloc;
   final Widget child;
@@ -16,6 +19,13 @@ class BlocProvider<T extends BlocBase> extends StatefulWidget {
 
   @override
   _BlocProviderState<T> createState() => _BlocProviderState<T>();
+
+  // La fonction of est une fonction statique qui renvoie un objet de type BlocProvider<T>
+  // of() prend comme argument le contexte du widget sur laquelle la elle est appelée.
+  // Elle trouve le premier Widget de type BlocProvider<T> qu'elle rencontrera
+  // en remontant la hiérarchie des widgets.
+  // 'as provider' indique à dart que le widget renvoyé va être de type Provider.
+  // Ainsi, of() peut retourner le bloc de type T du BlocProvider trouvé
 
   static T of<T extends BlocBase>(BuildContext context) {
     final type = _typeOf<BlocProvider<T>>();
@@ -38,23 +48,3 @@ class _BlocProviderState<T> extends State<BlocProvider<BlocBase>> {
     return widget.child;
   }
 }
-
-// class StateProvider extends InheritedWidget {
-//   
-//   StateProvider({Key key, Widget child, @required this.bloc}) : super(key: key, child: child);
-//   final StateBloc bloc;
-// 
-//   @override
-//   bool updateShouldNotify(_) => true;
-// 
-//   static StateProvider of(BuildContext context) {
-//     return (context.inheritFromWidgetOfExactType(StateProvider) as StateProvider);
-//   }
-// 
-//   // La fonction of est une fonction statique qui renvoie un objet de type AuthProvider
-//   // of() prend comme argument le contexte du widget sur laquelle la elle est appelée.
-//   // Elle trouve le premier Widget de type AuthProvider qu'elle rencontrera
-//   // en remontant la hiérarchie des widgets.
-//   // 'as provider' indique à dart que le widget renvoyé va être de type Provider.
-//   // Ainsi, of() peut retourner la propriété le AuthProvider trouvé et donner accès à l'auth
-// }

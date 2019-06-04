@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:my_vl/src/blocs/bloc_provider.dart';
 import 'package:my_vl/src/blocs/state_bloc.dart';
-import '../../models/user_model.dart';
+import 'package:my_vl/src/models/user_model.dart';
 
 enum Destination {
   CVL,
@@ -127,6 +127,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
     return TextFormField(
       minLines: 1,
       maxLines: 1,
+      textCapitalization: TextCapitalization.sentences,
         decoration: InputDecoration (
           border: OutlineInputBorder(),
           labelText: 'Titre du message',
@@ -145,6 +146,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
     return TextFormField( 
       minLines: 5,
       maxLines: 10,
+      textCapitalization: TextCapitalization.sentences,
       decoration: InputDecoration (
         border: OutlineInputBorder(),
           labelText: 'Votre message'
@@ -163,6 +165,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
               return Row(
                 children: <Widget>[
                   Checkbox (
+                    activeColor: Theme.of(context).primaryColor,
                     onChanged: (bool e) => something(), 
                     value: checkBoxState),
                     Text (t),
