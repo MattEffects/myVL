@@ -148,7 +148,7 @@ class _ActivityPageState extends State<ActivityPage> {
                               aspectRatio: 1.0,
                               child: CircleAvatar(
                                 backgroundImage: (snapshot.data.photoUrl == null)
-                                  ? AssetImage('assets/bg_imgs/girl_book.jpg')
+                                  ? AssetImage('assets/default_photo.png')
                                   : NetworkImage(snapshot.data.photoUrl),
                                 // radius: 80,
                               ),

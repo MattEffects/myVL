@@ -1,12 +1,15 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/services.dart';
 import 'package:my_vl/src/blocs/auth_provider.dart';
 import 'package:my_vl/src/blocs/bloc_provider.dart';
 import 'package:my_vl/src/blocs/state_bloc.dart';
 import 'package:my_vl/src/services/authentication.dart';
 import 'package:my_vl/src/mixins/validators.dart';
 import 'package:my_vl/src/models/school_model.dart';
+import 'package:my_vl/src/pages/auth_screen.dart';
 
 class IdScreen extends StatefulWidget {
   @override
@@ -195,9 +198,9 @@ class _IdScreenState extends State<IdScreen> with Validators {
       // Affiche un message dans le cas de l'existence multiple d'un étudiant
       catch (error) {
         setState(() {
-          _errorMessage =
-              'Plusieurs élèves portent ce nom dans la ${_classroom.name} \n Merci de vous adresser à votre établissement';
+          _errorMessage = 'Plusieurs élèves portent ce nom dans la ${_classroom.name} \n Merci de vous adresser à votre établissement';
         });
+        _cancelData();
         return false;
       }
       // Informe que le formulaire est valide
@@ -208,11 +211,11 @@ class _IdScreenState extends State<IdScreen> with Validators {
       // Supprime les données stockées dans les variables
       // Retourne un message d'erreur
       else {
-        _cancelData();
         setState(() {
           _errorMessage =
               'Aucun élève à votre nom n\'a été trouvé dans la ${_classroom.name}';
         });
+        _cancelData();
         return false;
       }
     }
@@ -318,6 +321,7 @@ class _IdScreenState extends State<IdScreen> with Validators {
     List<Classroom> classrooms = (_schoolIndex != null)
       ? schools[_schoolIndex].classrooms
       : [];
+      print(classrooms);
 
     return DropdownButtonFormField(
       // SI CLASSROOMS N'EST PAS VIDE
@@ -336,6 +340,7 @@ class _IdScreenState extends State<IdScreen> with Validators {
           : null,
       // A chaque sélection de classe
       onChanged: (value) {
+        print(classrooms[value]);
         setState(() {
           // Assigne à la variable _schoolIndex 
           _classroomIndex = value;
@@ -413,25 +418,52 @@ class _IdScreenState extends State<IdScreen> with Validators {
     final AuthBase auth = AuthProvider.of(context).auth;
     showDialog(
         context: context,
-        builder: (BuildContext context) {
+        builder: (BuildContext context2) {
           return AlertDialog(
             title: Text('Annuler l\'inscription'),
             content: Text('Souhaitez-vous réellement annuler la procédure d\'inscription ?'),
             actions: <Widget>[
               FlatButton(
                 child: Text('Annuler'),
-                onPressed: () => Navigator.of(context).pop(),
+                onPressed: () => Navigator.of(context2).pop(),
               ),
               FlatButton(
                 textColor: Colors.red[400],
                 child: Text('Continuer'),
                 onPressed: () async {
                   FirebaseUser user = await auth.currentUser();
-                  setState(() => _isLoading = true);
                   // TODO : Prévoir un catch d'erreur dans le cas où l'utilisateur attend trop pour cliquer
                   // Supprime le compte de l'utilisateur connecté
-                  await user.delete();
-                  Navigator.of(context).pop();
+                  try {
+                    await user.delete();
+                    Navigator.of(context2).pop();
+                  } on PlatformException catch(e) {
+                    Navigator.of(context2).pop();
+                    print('wow');
+                    showDialog(
+                      context: context,
+                      builder: (context3) {
+                        return AlertDialog(
+                          title: Text('Délai dépassé'),
+                          content: Text("""Vous ne pouvez pas supprimer votre compte en raison d'un trop long délai entre votre reqûete et votre dernière connexion.\nVous allez être redirigé vers l'écran de bienvenue."""),
+                          actions: <Widget>[
+                            FlatButton(
+                              child: Text("Annuler"),
+                              onPressed: () => Navigator.of(context3).pop(),
+                            ),
+                            FlatButton(
+                              child: Text("Ok"),
+                              onPressed: () {
+                                auth.signOut();
+                                Navigator.of(context3).pop();
+                              },
+                            ),
+                          ],
+                        );
+                      }
+                    );
+                  }
+                  // Navigator.of(context).pop();
                 },
               ),
             ],

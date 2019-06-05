@@ -1,32 +1,6 @@
 import 'package:flutter/material.dart';
-// import 'dart:convert';
-// import 'dart:io';
-// import 'package:http/http.dart' as http;
 
 List<String> images = [];
-
-// class ImageModel {
-//   int id;
-//   String title;
-//   String url;
-//   List<dynamic> photos = [];
-// 
-//   ImageModel.fromJson(Map<String, dynamic> parsedJson) {
-//     // id = parsedJson['id'];
-//     // title = parsedJson['title'];
-//     photos = (parsedJson['photos'] == null) ? [] : parsedJson['photos'];
-//     url = photos.isEmpty 
-//       ? 'https://images.pexels.com/photos/934964/pexels-photo-934964.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260'
-//       : photos[0]['url'];
-//   }
-// 
-//   ImageModel(this.id, this.title, this.url);
-// 
-//   @override
-//   String toString() {
-//     return id.toString();
-//   }
-// }
 
 class NewsScreen extends StatefulWidget {
   @override
@@ -34,20 +8,6 @@ class NewsScreen extends StatefulWidget {
 }
 
 class _NewsScreenState extends State<NewsScreen> {
-
-  // void fetchImage() async {
-  //   final response = await http.get(
-  //     'https://api.pexels.com/v1/curated?per_page=1&page=1',
-  //     headers: {
-  //       HttpHeaders.authorizationHeader:
-  //           '563492ad6f91700001000001da19147ec4784cfb88f1ba55914b133d'
-  //     },
-  //   );
-  //   final responseJson = json.decode(response.body);
-  //   setState(() {
-  //     images.add(ImageModel.fromJson(responseJson).url);
-  //   });
-  // }
 
   @override
   Widget build(BuildContext context) {
