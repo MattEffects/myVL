@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:outline_material_icons/outline_material_icons.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:my_vl/src/services/authentication.dart';
 import 'package:my_vl/src/widgets/animated_bottom_bar.dart';
 import 'package:my_vl/src/blocs/auth_provider.dart';
@@ -56,6 +57,7 @@ class ActivityPage extends StatefulWidget {
 
 class _ActivityPageState extends State<ActivityPage> {
   int selectedBarIndex = 0;
+  final Firestore _firestore = Firestore.instance;
 
   @override
   Widget build(BuildContext context) {
@@ -146,11 +148,18 @@ class _ActivityPageState extends State<ActivityPage> {
                           Expanded(
                             child: AspectRatio(
                               aspectRatio: 1.0,
-                              child: CircleAvatar(
-                                backgroundImage: (snapshot.data.photoUrl == null)
-                                  ? AssetImage('assets/default_photo.png')
-                                  : NetworkImage(snapshot.data.photoUrl),
-                                // radius: 80,
+                              child: StreamBuilder<DocumentSnapshot>(
+                                stream: _firestore.collection('resources').document('images').snapshots(),
+                                builder: (context, snapshot2) {
+                                  if (snapshot2.hasData) {
+                                    return CircleAvatar(
+                                      backgroundImage: (snapshot.data.photoUrl == null)
+                                        ? NetworkImage(snapshot2.data.data['defaultPhotoUrl'])
+                                        : NetworkImage(snapshot.data.photoUrl),
+                                    );
+                                  }
+                                  return CircularProgressIndicator();
+                                }
                               ),
                             ),
                           ),
