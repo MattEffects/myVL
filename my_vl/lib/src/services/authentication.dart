@@ -39,31 +39,6 @@ class Auth implements AuthBase {
     return user.uid;
   }
 
-  Future<void> changeUserData(FirebaseUser fireUser, StudentUser studentUser) async {
-    await _firestore.collection('users').document('${fireUser.uid}').setData({
-      'name': {
-        'first': 'Noémie',
-        'last': 'Currato',
-      },
-      'email': studentUser.email,
-      'photoUrl': studentUser.photoUrl,
-      'school': studentUser.schoolName,
-      'classroom': studentUser.classroomName,
-      'speciality': studentUser.speciality,
-    }, merge: true);
-    UserUpdateInfo updateInfo = UserUpdateInfo();
-    await _firestore
-        .collection('users')
-        .document('${fireUser.uid}')
-        .get()
-        .then((doc) {
-      updateInfo.displayName = '${doc.data['name']['first']} ${doc.data['name']['last']}';
-    });
-    await fireUser.updateProfile(updateInfo);
-    await fireUser.reload();
-    return fireUser;
-  }
-
   Future<FirebaseUser> currentUser() async {
     FirebaseUser user = await _firebaseAuth.currentUser();
     if (user != null) {
