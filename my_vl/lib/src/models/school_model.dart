@@ -27,9 +27,9 @@ class School {
 
   School.fromJson(parsedJson)
     : name = parsedJson['name'],
-      classrooms = _getSchoolClasses(parsedJson['classes']);
+      classrooms = _getClassrooms(parsedJson['classes']);
 
-  static List<Classroom> _getSchoolClasses(classroomsList) {
+  static List<Classroom> _getClassrooms(classroomsList) {
     List<Classroom> classrooms = [];
     classroomsList.forEach((classroom) {
       final Classroom classroomToAdd = Classroom.fromJson(classroom);
@@ -65,11 +65,21 @@ class Classroom {
   final String pathway;
   final List<Student> students;
 
+
   Classroom.fromJson(parsedJson)
     : name = parsedJson['name'],
       level = parsedJson['level'],
       pathway = parsedJson['pathway'],
       students = _getStudents(parsedJson['students']);
+
+  static List<Student> _getStudents(studentsList) {
+    List<Student> students = [];
+    studentsList.forEach((student) {
+      final studentToAdd = Student.fromJson(student);
+      students.add(studentToAdd);
+    });
+    return students;
+  }
 
   String toString() {
     return name;
@@ -81,15 +91,6 @@ class Classroom {
       message = message + '${student.toString()}, ';
     });
     return message.replaceRange(message.length-2, message.length, '');
-  }
-
-  static List<Student> _getStudents(studentsList) {
-    List<Student> students = [];
-    studentsList.forEach((student) {
-      final studentToAdd = Student.fromJson(student);
-      students.add(studentToAdd);
-    });
-    return students;
   }
 
 }
