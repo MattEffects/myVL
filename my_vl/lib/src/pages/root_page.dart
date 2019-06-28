@@ -67,7 +67,6 @@ class RootPage extends StatelessWidget {
                     //     correspondant à l'utilisateur actif
                     // (2) Retourne l'ActivityPage()
                     if (userDoc != null) {
-                      print('${userDoc.documentID} ${user.uid}');
                       bloc.changeActiveUser(StudentUser.fromFirestoreDocument(userDoc, user));
                       return ActivityPage();
                     }

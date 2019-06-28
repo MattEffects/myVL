@@ -1,24 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:my_vl/src/models/user_model.dart';
 import 'package:my_vl/src/blocs/bloc_provider.dart';
-import 'package:my_vl/src/blocs/state_bloc.dart';
+import 'package:my_vl/src/models/user_model.dart';
 
-List<String> images = [];
-
-class NewsScreen extends StatefulWidget {
+class PollScreen extends StatefulWidget {
   @override
-  _NewsScreenState createState() => _NewsScreenState();
+  _PollScreenState createState() => _PollScreenState();
 }
 
-class _NewsScreenState extends State<NewsScreen> {
+class _PollScreenState extends State<PollScreen> {
+  
   @override
   Widget build(BuildContext context) {
-    return newsList();
+    return pollList();
   }
 
-  Widget newsList() {
+  Widget pollList() {
     final Firestore _firestore = Firestore.instance;
     // fetchImage();
     return Container(
@@ -33,7 +30,7 @@ class _NewsScreenState extends State<NewsScreen> {
                 stream: _firestore
                     .collection('schools')
                     .document('${user.schoolId}')
-                    .collection('news')
+                    .collection('polls')
                     .snapshots(),
                 builder: (context, AsyncSnapshot<QuerySnapshot> newsSnapshot) {
                   if (!newsSnapshot.hasData) {
@@ -42,7 +39,7 @@ class _NewsScreenState extends State<NewsScreen> {
                   List<DocumentSnapshot> documents = newsSnapshot.data.documents;
                   int itemCount = documents.length;
                   if (itemCount == 0) {
-                    return Center(child: Text('Pas de news disponibles !'),);
+                    return Center(child: Text('Pas de sondages disponibles !'),);
                   }
                   return ListView.builder(
                     physics: BouncingScrollPhysics(),
@@ -56,16 +53,9 @@ class _NewsScreenState extends State<NewsScreen> {
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: <Widget>[
-                              AspectRatio(
-                                aspectRatio: 16 / 9,
-                                child: Image.network(
-                                  '${documents[index].data['photoUrl']}',
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
                               ListTile(
                                 contentPadding: EdgeInsets.all(10.0),
-                                leading: Icon(Icons.flight),
+                                leading: Icon(Icons.question_answer),
                                 title: Text('${documents[index].data['title']}'),
                                 subtitle: Text(
                                     '${documents[index].data['text'].substring(0, 70)}...'),
@@ -96,13 +86,6 @@ class _NewsScreenState extends State<NewsScreen> {
                           margin: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
                           child: ListTile(
                             contentPadding: EdgeInsets.all(10.0),
-                            leading: AspectRatio(
-                              aspectRatio: 1,
-                              child: Image.network(
-                                '${documents[index].data['photoUrl']}',
-                                fit: BoxFit.cover,
-                              ),
-                            ),
                             title: Text('${documents[index].data['title']}'),
                             subtitle: Text(
                                 '${documents[index].data['text'].substring(0, 70)}...'),
@@ -117,13 +100,6 @@ class _NewsScreenState extends State<NewsScreen> {
                           margin: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 0.0),
                           child: ListTile(
                             contentPadding: EdgeInsets.all(10.0),
-                            leading: AspectRatio(
-                              aspectRatio: 1,
-                              child: Image.network(
-                                '${documents[index].data['photoUrl']}',
-                                fit: BoxFit.cover,
-                              ),
-                            ),
                             title: Text('${documents[index].data['title']}'),
                             subtitle: Text(
                                 '${documents[index].data['text'].substring(0, 70)}...'),

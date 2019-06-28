@@ -9,7 +9,6 @@ import 'package:my_vl/src/blocs/state_bloc.dart';
 import 'package:my_vl/src/services/authentication.dart';
 import 'package:my_vl/src/mixins/validators.dart';
 import 'package:my_vl/src/models/school_model.dart';
-import 'package:my_vl/src/pages/auth_screen.dart';
 
 class IdScreen extends StatefulWidget {
   @override
@@ -69,7 +68,7 @@ class _IdScreenState extends State<IdScreen> with Validators {
             // Affiche l'écran si des données de Firestore ont été reçues
             if (snapshot.hasData) {
               var schools = snapshot.data.documents.map((school) {
-                return School.fromJson(school.data);
+                return School.fromJson(school);
               }).toList();
               return Stack(
                 children: <Widget>[
@@ -151,6 +150,7 @@ class _IdScreenState extends State<IdScreen> with Validators {
           'isEmailVerified': activeFireUser.isEmailVerified,
           'photoUrl': activeFireUser.photoUrl,
           'schoolName': _school.name,
+          'schoolId': _school.id,
           'classroomName': _classroom.name,
           'level': _level,
           'pathway': _pathway,
@@ -432,12 +432,12 @@ class _IdScreenState extends State<IdScreen> with Validators {
                 child: Text('Continuer'),
                 onPressed: () async {
                   FirebaseUser user = await auth.currentUser();
-                  // TODO : Prévoir un catch d'erreur dans le cas où l'utilisateur attend trop pour cliquer
                   // Supprime le compte de l'utilisateur connecté
                   try {
                     await user.delete();
                     Navigator.of(context2).pop();
-                  } on PlatformException catch(e) {
+                  } 
+                  on PlatformException {
                     Navigator.of(context2).pop();
                     print('wow');
                     showDialog(
@@ -445,7 +445,7 @@ class _IdScreenState extends State<IdScreen> with Validators {
                       builder: (context3) {
                         return AlertDialog(
                           title: Text('Délai dépassé'),
-                          content: Text("""Vous ne pouvez pas supprimer votre compte en raison d'un trop long délai entre votre reqûete et votre dernière connexion.\nVous allez être redirigé vers l'écran de bienvenue."""),
+                          content: Text('Vous ne pouvez pas supprimer votre compte en raison d\'un trop long délai entre votre reqûete et votre dernière connexion.\nVous allez être redirigé vers l\'écran de bienvenue.'),
                           actions: <Widget>[
                             FlatButton(
                               child: Text("Annuler"),

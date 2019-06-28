@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+export 'package:my_vl/src/blocs/state_bloc.dart';
 
 // Définition de l'interface d'un Bloc
 abstract class BlocBase {

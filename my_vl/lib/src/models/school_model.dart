@@ -22,12 +22,14 @@ enum Speciality {
 }
 
 class School {
+  final String id;
   final String name;
   final List<Classroom> classrooms;
 
   School.fromJson(parsedJson)
-    : name = parsedJson['name'],
-      classrooms = _getClassrooms(parsedJson['classes']);
+    : id = parsedJson.documentID,
+      name = parsedJson.data['name'],
+      classrooms = _getClassrooms(parsedJson.data['classes']);
 
   static List<Classroom> _getClassrooms(classroomsList) {
     List<Classroom> classrooms = [];

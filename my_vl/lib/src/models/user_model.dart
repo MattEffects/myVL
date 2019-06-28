@@ -15,6 +15,7 @@ class StudentUser {
   final String photoUrl;
   // School school;
   // Classroom classroom;
+  final String schoolId;
   final String schoolName;
   final String classroomName;
   final Level level;
@@ -44,6 +45,7 @@ class StudentUser {
       isEmailVerified = doc.data['isEmailVerified'],
       photoUrl = doc.data['photoUrl'],
       // school = schools.singleWhere((school) => school.name == doc.data['schoolName']),
+      schoolId = doc.data['schoolId'],
       schoolName = doc.data['schoolName'],
       // classroom = schools.singleWhere((school) => school.name == doc.data['schoolName'])
       //   .classrooms.singleWhere((classroom) => classroom.name == doc.data['classroomName']),

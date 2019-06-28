@@ -9,44 +9,16 @@ import 'package:my_vl/src/blocs/bloc_provider.dart';
 import 'package:my_vl/src/blocs/state_bloc.dart';
 import 'package:my_vl/src/models/user_model.dart';
 import 'package:my_vl/src/pages/activity_screens/news_screen.dart';
-import 'package:my_vl/src/pages/activity_screens/survey_screen.dart';
+import 'package:my_vl/src/pages/activity_screens/poll_screen.dart';
 import 'package:my_vl/src/pages/activity_screens/feedback_screen.dart';
 import 'package:my_vl/src/pages/activity_screens/results_screen.dart';
 
 class ActivityPage extends StatefulWidget {
 
-  // Enonciation des différents items de notre barre de navigation
-  final List<BarItem> barItems = [
-    BarItem(
-      text: 'Nouvelles',
-      iconData: OMIcons.insertDriveFile,
-      selectedIconData: Icons.insert_drive_file,
-      color: Colors.indigo,
-    ),
-    BarItem(
-      text: 'Sondages',
-      iconData: OMIcons.insertChart,
-      selectedIconData: Icons.insert_chart,
-      color: Colors.pinkAccent,
-    ),
-    BarItem(
-      text: 'Propositions',
-      iconData: OMIcons.chatBubbleOutline,
-      selectedIconData: Icons.chat_bubble,
-      color: Colors.yellow.shade900,
-    ),
-    BarItem(
-      text: 'Résultats',
-      iconData: OMIcons.school,
-      selectedIconData: Icons.school,
-      color: Colors.teal,
-    ),
-  ];
-
   // Enonciation des différents écrans de notre navigation
   final List<Widget> screens = [
     NewsScreen(),
-    SurveyScreen(),
+    PollScreen(),
     FeedbackScreen(),
     ResultsScreen(),
   ];
@@ -61,12 +33,41 @@ class _ActivityPageState extends State<ActivityPage> {
 
   @override
   Widget build(BuildContext context) {
+
+    // Enonciation des différents items de notre barre de navigation
+    final List<BarItem> barItems = [
+      BarItem(
+        text: 'Nouvelles',
+        iconData: OMIcons.insertDriveFile,
+        selectedIconData: Icons.insert_drive_file,
+        color: Colors.indigo,
+      ),
+      BarItem(
+        text: 'Sondages',
+        iconData: OMIcons.insertChart,
+        selectedIconData: Icons.insert_chart,
+        color: Colors.pinkAccent,
+      ),
+      BarItem(
+        text: 'Propositions',
+        iconData: OMIcons.chatBubbleOutline,
+        selectedIconData: Icons.chat_bubble,
+        color: Colors.yellow.shade900,
+      ),
+      BarItem(
+        text: 'Résultats',
+        iconData: OMIcons.school,
+        selectedIconData: Icons.school,
+        color: Colors.teal,
+      ),
+    ];
+    
     return Scaffold(
       drawer: _buildDrawer(),
       appBar: AppBar(
         title: Text(
-          '${widget.barItems[selectedBarIndex].text}',
-          style: TextStyle(color: widget.barItems[selectedBarIndex].color),
+          '${barItems[selectedBarIndex].text}',
+          style: TextStyle(color: barItems[selectedBarIndex].color),
         ),
         centerTitle: true,
         backgroundColor: Theme.of(context).canvasColor,
@@ -75,12 +76,17 @@ class _ActivityPageState extends State<ActivityPage> {
       ),
 
       body: Theme(
-        data: Theme.of(context).copyWith(primaryColor: widget.barItems[selectedBarIndex].color, accentColor: widget.barItems[selectedBarIndex].color,),
+        data: Theme.of(context).copyWith(
+          primaryColor: barItems[selectedBarIndex].color,
+          accentColor: barItems[selectedBarIndex].color,
+          // textSelectionColor: barItems[selectedBarIndex].color.withOpacity(0.5),
+          textSelectionHandleColor: barItems[selectedBarIndex].color,
+          cursorColor: barItems[selectedBarIndex].color,),
         child: widget.screens[selectedBarIndex],
       ),
 
       bottomNavigationBar: AnimatedBottomBar(
-          barItems: widget.barItems,
+          barItems: barItems,
           animationDuration: const Duration(milliseconds: 150),
           onBarTap: (index) {
             setState(() {
@@ -88,6 +94,17 @@ class _ActivityPageState extends State<ActivityPage> {
             });
           }),
     );
+  }
+
+  Color _newsColor(ThemeData theme) {
+    switch (theme.brightness) {
+      case Brightness.light:
+        return Colors.indigo[800];
+      case Brightness.dark:
+        return Colors.lightBlue[50];
+      default:
+        return Colors.indigo[800];
+    }
   }
 
   Color _textColor(ThemeData theme) {
@@ -112,12 +129,12 @@ class _ActivityPageState extends State<ActivityPage> {
 
   // Construit le Drawer de navigation
   // (Appelée par la propriété "drawer:" de la Scaffold() de la page)
-  _buildDrawer() {
+  Widget _buildDrawer() {
     // Suivi d'un layout responsive à l'aide du widget MediaQuery
     // qui nous donne des informations sur l'écran de l'utilisateur
     final StateBloc bloc = BlocProvider.of<StateBloc>(context);
     final _tilesPadding = EdgeInsets.symmetric(
-      horizontal: MediaQuery.of(context).size.width / 9,
+      horizontal: MediaQuery.of(context).size.width / 7,
     );
     return SizedBox(
       width: MediaQuery.of(context).size.width * 3 / 4,
@@ -152,10 +169,35 @@ class _ActivityPageState extends State<ActivityPage> {
                                 stream: _firestore.collection('resources').document('images').snapshots(),
                                 builder: (context, snapshot2) {
                                   if (snapshot2.hasData) {
-                                    return CircleAvatar(
-                                      backgroundImage: (snapshot.data.photoUrl == null)
-                                        ? NetworkImage(snapshot2.data.data['defaultPhotoUrl'])
-                                        : NetworkImage(snapshot.data.photoUrl),
+                                    String imageUrl = (snapshot.data.photoUrl == null)
+                                    ? snapshot2.data.data['defaultPhotoUrl']
+                                    : snapshot.data.photoUrl;
+                                    return InkWell(
+                                      onTap: () => Navigator.of(context).push(
+                                        PageRouteBuilder(
+                                          opaque: true,
+                                          pageBuilder: (context,_,__) {
+                                            return Container(
+                                              child: GestureDetector(
+                                                onVerticalDragStart: Navigator.of(context).pop,
+                                                onTap: Navigator.of(context).pop,
+                                                child: Hero(
+                                                  tag: 'Avatar',
+                                                  child: Image.network(imageUrl, fit: BoxFit.contain),
+                                                  transitionOnUserGestures: true,
+                                                ),
+                                              ),
+                                            );
+                                          }
+                                        ),
+                                      ),
+                                      child: ClipOval(
+                                        child: Hero(
+                                          tag: 'Avatar',
+                                          child: Image.network(imageUrl, fit: BoxFit.contain,),
+                                          transitionOnUserGestures: true,
+                                        )
+                                      ),
                                     );
                                   }
                                   return CircularProgressIndicator();

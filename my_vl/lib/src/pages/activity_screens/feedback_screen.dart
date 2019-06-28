@@ -16,26 +16,27 @@ class FeedbackScreen extends StatefulWidget {
 }
 
 class _FeedbackScreenState extends State<FeedbackScreen> {
-  String _destination = 'CVL';
-  String t = "Vous n'êtes pas anonyme";
-  bool checkBoxState = false;
+  // Clé référant à notre formulaire
   final _formKey = GlobalKey<FormState>();
+  bool checkBoxState = false;
+  // Gère la validation auto des champs du formulaire
+  bool _autovalidate = false;
   String title = '';
   String message = '';
+  String _destination = 'CVL';
+  String t = "Vous n'êtes pas anonyme";
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: EdgeInsets.all(20.0),
-      child: SingleChildScrollView(
-        child: Form(
-          child: Column(
-            mainAxisSize: MainAxisSize.max,
-            children: <Widget>[
-              _buttonRow(),
-              _body(), 
-            ],
-          ),
+    return SingleChildScrollView(
+      padding: EdgeInsets.all(20.0),
+      child: Form(
+        child: Column(
+          mainAxisSize: MainAxisSize.max,
+          children: <Widget>[
+            _buttonRow(),
+            _body(),
+          ],
         ),
       ),
     );
@@ -52,11 +53,11 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
               'CVL',
               style: TextStyle(
                 fontSize: 18,
-                decoration: (_destination == 'CVL')
-                    ? TextDecoration.underline
-                    : null,
+                decoration:
+                    (_destination == 'CVL') ? TextDecoration.underline : null,
               ),
             ),
+            shape: StadiumBorder(),
             onPressed: () => _toggleDestination('CVL'),
             textColor: (_destination == 'CVL')
                 ? Theme.of(context).primaryColor
@@ -72,6 +73,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                     : null,
               ),
             ),
+            shape: StadiumBorder(),
             onPressed: () => _toggleDestination('DELEGUES'),
             textColor: (_destination == 'DELEGUES')
                 ? Theme.of(context).primaryColor
@@ -82,11 +84,11 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
               'Devs',
               style: TextStyle(
                 fontSize: 18,
-                decoration: (_destination == 'DEVS')
-                    ? TextDecoration.underline
-                    : null,
+                decoration:
+                    (_destination == 'DEVS') ? TextDecoration.underline : null,
               ),
             ),
+            shape: StadiumBorder(),
             onPressed: () => _toggleDestination('DEVS'),
             textColor: (_destination == 'DEVS')
                 ? Theme.of(context).primaryColor
@@ -97,130 +99,150 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
     );
   }
 
- Widget _body() {
+  Widget _body() {
     return Container(
-      child: SingleChildScrollView(
-          padding: EdgeInsets.all(20.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                _titelfield(),
-                SizedBox(height: 20),
-                _messagefield(),
-                SizedBox(height: 20),
-                _anonymous(),
-                SizedBox(height: 20),
-                _submitButton(),
-                // Padding(
-                //   padding: const EdgeInsets.symmetric(vertical: 20.0),
-                // )
-              ],
-            ),
-          )
-    )
-    );
+        child: SingleChildScrollView(
+            padding: EdgeInsets.all(20.0),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: <Widget>[
+                  _titleField(),
+                  SizedBox(height: 20),
+                  _messageField(),
+                  SizedBox(height: 20),
+                  _showHintMessage(),
+                  _anonymousCheckbox(),
+                  SizedBox(height: 20),
+                  _submitButton(),
+                  // Padding(
+                  //   padding: const EdgeInsets.symmetric(vertical: 20.0),
+                  // )
+                ],
+              ),
+            )));
   }
 
-  Widget _titelfield() {
+  Widget _titleField() {
     return TextFormField(
       minLines: 1,
       maxLines: 1,
+      autofocus: false,
+      autocorrect: true,
+      autovalidate: _autovalidate,
       textCapitalization: TextCapitalization.sentences,
-        decoration: InputDecoration (
-          border: OutlineInputBorder(),
-          labelText: 'Titre du message',
-        ),
-            validator: (value) {
-              if (value.isEmpty) {
-              return 'Entrez du texte'; 
-              }
-            },
+      decoration: InputDecoration(
+        border: OutlineInputBorder(),
+        labelText: 'Titre du message',
+      ),
+      validator: (value) {
+        if (value.isEmpty) {
+          return 'Entrez du texte';
+        }
+      },
       onSaved: (value) => title = value,
     );
   }
-  
-         
-  Widget _messagefield() {
-    return TextFormField( 
+
+  Widget _messageField() {
+    return TextFormField(
       minLines: 5,
       maxLines: 10,
+      autofocus: false,
+      autocorrect: true,
+      autovalidate: _autovalidate,
       textCapitalization: TextCapitalization.sentences,
-      decoration: InputDecoration (
-        border: OutlineInputBorder(),
-          labelText: 'Votre message'
-        ),
-        validator: (value) {
-          if (value.isEmpty) { 
-            return 'Entrez du texte';
-          }
-        },
+      decoration: InputDecoration(
+          border: OutlineInputBorder(), labelText: 'Votre message'),
+      validator: (value) {
+        if (value.isEmpty) {
+          return 'Entrez du texte';
+        }
+      },
       onSaved: (value) => message = value,
-      );
-  }       
-
- 
-  Widget _anonymous() {  
-              return Row(
-                children: <Widget>[
-                  Checkbox (
-                    activeColor: Theme.of(context).primaryColor,
-                    onChanged: (bool e) => something(), 
-                    value: checkBoxState),
-                    Text (t),
-                ],
-                  );
+    );
   }
 
-  void something() { 
-  setState(() { 
-    if (checkBoxState) { 
-      t = "Vous n'êtes pas anonyme";
-      checkBoxState = !checkBoxState;
-    } else { 
-      t = "Vous êtes anonyme";
-      checkBoxState = !checkBoxState;
-    }
-    }
-  ); 
-}
+  Widget _anonymousCheckbox() {
+    return Row(
+      children: <Widget>[
+        Checkbox(
+            activeColor: Theme.of(context).primaryColor,
+            onChanged: (bool e) => something(),
+            value: checkBoxState),
+        GestureDetector(
+          child: Text(t),
+          onTap: something,
+        ),
+      ],
+    );
+  }
 
-  Widget _submitButton() { 
+  void something() {
+    setState(() {
+      if (checkBoxState) {
+        t = "Vous n'êtes pas anonyme";
+        checkBoxState = !checkBoxState;
+      } else {
+        t = "Vous êtes anonyme";
+        checkBoxState = !checkBoxState;
+      }
+    });
+  }
+
+  Widget _submitButton() {
     return FlatButton.icon(
-            label: Text('Envoyer'),
-            icon: Icon(Icons.send),
-            color: Theme.of(context).primaryColor,
-            textColor: Colors.white,
-              onPressed: _submit,
-            );
+      label: Text('Envoyer'),
+      icon: Icon(Icons.send),
+      color: Theme.of(context).primaryColor,
+      textColor: Colors.white,
+      onPressed: _submit,
+    );
   }
 
   void _submit() async {
+    setState(() => _autovalidate = true);
     if (_formKey.currentState.validate()) {
       _formKey.currentState.save();
       Firestore firestore = Firestore.instance;
       StateBloc bloc = BlocProvider.of<StateBloc>(context);
       StudentUser student = await bloc.activeUser;
-      await firestore.collection('feedbacks').document().setData(
-        {'title': title,
+      await firestore.collection('schools').document(student.schoolId).collection('feedbacks').document().setData({
+        'title': title,
         'message': message,
-        'student': checkBoxState ? null : '${student.firstName} ${student.lastName}',
+        'student':
+            checkBoxState ? null : '${student.firstName} ${student.lastName}',
         'studentClassroom': checkBoxState ? null : student.classroomName,
         'studentId': checkBoxState ? null : student.id,
-        'destination': _destination}
-      );
+        'destination': _destination
+      });
       _formKey.currentState.reset();
-      Scaffold.of(context).showSnackBar(SnackBar(content: Text('Merci de votre investissement !')));
+      Scaffold.of(context).showSnackBar(
+          SnackBar(content: Text('Merci de votre investissement !')));
     }
   }
 
+  Widget _showHintMessage() {
+    if (checkBoxState) {
+      return Text(
+        'Attention, les administrateurs pourront, en cas d\'abus, accéder à votre identité utilisateur.',
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontSize: 13.0,
+          color: Theme.of(context).primaryColor,
+          height: 1.0,
+          fontWeight: FontWeight.w300,
+        ),
+      );
+    } else {
+      return Container(
+        height: 0.0,
+      );
+    }
+  }
 
-void _toggleDestination(String destination) {
-    setState(() => _destination = destination);}
-
+  void _toggleDestination(String destination) {
+    setState(() => _destination = destination);
+  }
 }
-
-  
-
-
