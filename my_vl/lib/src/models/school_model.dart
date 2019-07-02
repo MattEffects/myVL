@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 List<String> levels = ['seconde', 'premiere', 'terminale'];
 List<String> pathways = ['S', 'ES', 'L', 'STMG', 'STI2D', 'ST2S'];
 
@@ -26,10 +28,10 @@ class School {
   final String name;
   final List<Classroom> classrooms;
 
-  School.fromJson(parsedJson)
-    : id = parsedJson.documentID,
-      name = parsedJson.data['name'],
-      classrooms = _getClassrooms(parsedJson.data['classes']);
+  School.fromFirestoreDocument(DocumentSnapshot schoolDocument)
+    : id = schoolDocument.documentID,
+      name = schoolDocument.data['name'],
+      classrooms = _getClassrooms(schoolDocument.data['classes']);
 
   static List<Classroom> _getClassrooms(classroomsList) {
     List<Classroom> classrooms = [];

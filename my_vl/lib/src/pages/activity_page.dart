@@ -1,5 +1,7 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:flutter/services.dart';
 import 'package:outline_material_icons/outline_material_icons.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:my_vl/src/services/authentication.dart';
@@ -33,6 +35,7 @@ class _ActivityPageState extends State<ActivityPage> {
 
   @override
   Widget build(BuildContext context) {
+    bool _isDark = Theme.of(context).brightness == Brightness.dark;
 
     // Enonciation des différents items de notre barre de navigation
     final List<BarItem> barItems = [
@@ -40,25 +43,25 @@ class _ActivityPageState extends State<ActivityPage> {
         text: 'Nouvelles',
         iconData: OMIcons.insertDriveFile,
         selectedIconData: Icons.insert_drive_file,
-        color: Colors.indigo,
+        color: _isDark ? Colors.lightBlue[200] : Colors.blue,
       ),
       BarItem(
         text: 'Sondages',
         iconData: OMIcons.insertChart,
         selectedIconData: Icons.insert_chart,
-        color: Colors.pinkAccent,
+        color: _isDark ? Colors.pinkAccent[100] : Colors.pinkAccent,
       ),
       BarItem(
         text: 'Propositions',
         iconData: OMIcons.chatBubbleOutline,
         selectedIconData: Icons.chat_bubble,
-        color: Colors.yellow.shade900,
+        color: _isDark ? Colors.orange[400] : Colors.yellow[900],
       ),
       BarItem(
         text: 'Résultats',
         iconData: OMIcons.school,
         selectedIconData: Icons.school,
-        color: Colors.teal,
+        color: _isDark ? Colors.teal[200] : Colors.teal,
       ),
     ];
     
@@ -173,7 +176,9 @@ class _ActivityPageState extends State<ActivityPage> {
                                     ? snapshot2.data.data['defaultPhotoUrl']
                                     : snapshot.data.photoUrl;
                                     return InkWell(
-                                      onTap: () => Navigator.of(context).push(
+                                      onTap: () {
+                                        print(imageUrl);
+                                        Navigator.of(context).push(
                                         PageRouteBuilder(
                                           opaque: true,
                                           pageBuilder: (context,_,__) {
@@ -183,18 +188,28 @@ class _ActivityPageState extends State<ActivityPage> {
                                                 onTap: Navigator.of(context).pop,
                                                 child: Hero(
                                                   tag: 'Avatar',
-                                                  child: Image.network(imageUrl, fit: BoxFit.contain),
+                                                  child: CachedNetworkImage(
+                                                    imageUrl: imageUrl,
+                                                    fit: BoxFit.contain,
+                                                    placeholder: (context, url) => CircularProgressIndicator(),
+                                                    errorWidget: (context, url, error) => Icon(Icons.error),
+                                                  ),
                                                   transitionOnUserGestures: true,
                                                 ),
                                               ),
                                             );
                                           }
                                         ),
-                                      ),
+                                      );},
                                       child: ClipOval(
                                         child: Hero(
                                           tag: 'Avatar',
-                                          child: Image.network(imageUrl, fit: BoxFit.contain,),
+                                          child: CachedNetworkImage(
+                                            imageUrl: imageUrl,
+                                            fit: BoxFit.contain,
+                                            placeholder: (context, url) => CircularProgressIndicator(),
+                                            errorWidget: (context, url, error) => Icon(Icons.error),
+                                          ),
                                           transitionOnUserGestures: true,
                                         )
                                       ),
@@ -215,7 +230,7 @@ class _ActivityPageState extends State<ActivityPage> {
                           ),
                           SizedBox(height: 5.0),
                           Text(
-                            '${snapshot.data.schoolName} - ${snapshot.data.classroomName}',
+                            '${snapshot.data.school.name} - ${snapshot.data.classroomName}',
                             style: TextStyle(
                               fontWeight: FontWeight.w300,
                             ),

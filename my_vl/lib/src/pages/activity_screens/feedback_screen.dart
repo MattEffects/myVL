@@ -138,7 +138,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
       ),
       validator: (value) {
         if (value.isEmpty) {
-          return 'Entrez du texte';
+          return 'Merci de renseigner un titre';
         }
       },
       onSaved: (value) => title = value,
@@ -157,7 +157,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
           border: OutlineInputBorder(), labelText: 'Votre message'),
       validator: (value) {
         if (value.isEmpty) {
-          return 'Entrez du texte';
+          return 'Votre message ne peut pas être vide';
         }
       },
       onSaved: (value) => message = value,
@@ -208,18 +208,24 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
       Firestore firestore = Firestore.instance;
       StateBloc bloc = BlocProvider.of<StateBloc>(context);
       StudentUser student = await bloc.activeUser;
-      await firestore.collection('schools').document(student.schoolId).collection('feedbacks').document().setData({
-        'title': title,
-        'message': message,
-        'student':
-            checkBoxState ? null : '${student.firstName} ${student.lastName}',
-        'studentClassroom': checkBoxState ? null : student.classroomName,
-        'studentId': checkBoxState ? null : student.id,
-        'destination': _destination
-      });
+      try {
+        firestore.collection('schools').document(student.school.id).collection('feedbacks').document().setData({
+          'title': title,
+          'message': message,
+          'student':
+              checkBoxState ? null : '${student.firstName} ${student.lastName}',
+          'studentClassroom': checkBoxState ? null : student.classroomName,
+          'studentId': checkBoxState ? null : student.id,
+          'destination': _destination
+        });
+      }
+      catch(e) {
+        print("$e");
+      }
+      setState(() => _autovalidate = false);
       _formKey.currentState.reset();
       Scaffold.of(context).showSnackBar(
-          SnackBar(content: Text('Merci de votre investissement !')));
+          SnackBar(content: Text('Merci, votre proposition a été envoyée !')));
     }
   }
 

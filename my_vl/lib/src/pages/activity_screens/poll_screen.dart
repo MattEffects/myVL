@@ -29,7 +29,7 @@ class _PollScreenState extends State<PollScreen> {
             return StreamBuilder(
                 stream: _firestore
                     .collection('schools')
-                    .document('${user.schoolId}')
+                    .document('${user.school.id}')
                     .collection('polls')
                     .snapshots(),
                 builder: (context, AsyncSnapshot<QuerySnapshot> newsSnapshot) {

@@ -4,6 +4,7 @@ import 'package:my_vl/src/blocs/auth_provider.dart';
 import 'package:my_vl/src/blocs/state_bloc.dart';
 import 'package:my_vl/src/blocs/bloc_provider.dart';
 import 'package:my_vl/src/pages/root_page.dart';
+import 'package:my_vl/src/pages/profile_pic_page.dart';
 
 // Notre application
 class App extends StatelessWidget {
@@ -27,7 +28,7 @@ class App extends StatelessWidget {
           stream: bloc.darkMode,
           builder: (context, snapshot) {
             return MaterialApp(
-              theme: snapshot.data ? ThemeData.dark() : ThemeData(),
+              theme: snapshot.data ? ThemeData.dark().copyWith(buttonColor: Colors.white) : ThemeData(),
               debugShowCheckedModeBanner: false,
               title: 'MyVL',
               home: RootPage(),

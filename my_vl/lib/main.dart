@@ -4,10 +4,17 @@ import 'package:my_vl/src/app.dart';
 import 'package:flutter/rendering.dart';
 
 // Fonction initiale du programme Dart
-void main() {
+void main() async {
   debugPaintSizeEnabled = false;
   // Désactivation de l'interface système par dessus notre application
-  SystemChrome.setEnabledSystemUIOverlays([]);
-  // Fonction Flutterqui lance l'application
-  runApp(App());
+  await SystemChrome.setEnabledSystemUIOverlays([]);
+  // Verrouillage de l'applicatio en mode portrait
+  // TODO: Développement d'un mode paysage
+  await SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+        DeviceOrientation.portraitDown,
+  ]).then((_) {
+    // Fonction Flutter qui lance l'application
+    runApp(App());
+  });
 }

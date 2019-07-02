@@ -13,10 +13,8 @@ class StudentUser {
   final String email;
   final bool isEmailVerified;
   final String photoUrl;
-  // School school;
+  School school;
   // Classroom classroom;
-  final String schoolId;
-  final String schoolName;
   final String classroomName;
   final Level level;
   final Pathway pathway;
@@ -36,7 +34,7 @@ class StudentUser {
   // });
 
   // Construction d'un objet StudentUser() via un document Firestore
-  StudentUser.fromFirestoreDocument(DocumentSnapshot doc, FirebaseUser activeFirebaseUser)
+  StudentUser.fromFirestoreDocument(DocumentSnapshot doc, FirebaseUser activeFirebaseUser, DocumentSnapshot school)
     : id = doc.documentID,
       firstName = doc.data['firstName'],
       lastName = doc.data['lastName'],
@@ -44,9 +42,7 @@ class StudentUser {
       email = doc.data['email'],
       isEmailVerified = doc.data['isEmailVerified'],
       photoUrl = doc.data['photoUrl'],
-      // school = schools.singleWhere((school) => school.name == doc.data['schoolName']),
-      schoolId = doc.data['schoolId'],
-      schoolName = doc.data['schoolName'],
+      school = School.fromFirestoreDocument(school),
       // classroom = schools.singleWhere((school) => school.name == doc.data['schoolName'])
       //   .classrooms.singleWhere((classroom) => classroom.name == doc.data['classroomName']),
       classroomName = doc.data['classroomName'],
@@ -121,7 +117,7 @@ class StudentUser {
     string += '\n';
     string += 'photoUrl: $photoUrl';
     string += '\n';
-    string += 'schoolName: $schoolName';
+    string += 'schoolName: ${school.name}';
     string += '\n';
     string += 'classroomName: $classroomName';
     string += '\n';

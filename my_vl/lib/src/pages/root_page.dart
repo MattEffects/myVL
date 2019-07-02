@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:my_vl/src/pages/activity_page.dart';
@@ -34,11 +36,12 @@ class RootPage extends StatelessWidget {
     // Référence au bloc de State de l'application
     final StateBloc bloc = BlocProvider.of<StateBloc>(context);
     // Premier StreamBuilder()
-    // Ecoute le Stream témoignant de changements de l'état de connexion 
+    // Ecoute le Stream témoignant de changements de l'état de connexion
     // de l'utilisateur Firebase
     return StreamBuilder(
       stream: auth.onAuthStateChanged,
-      builder: (BuildContext context, AsyncSnapshot<FirebaseUser> userAuthSnapshot) {
+      builder:
+          (BuildContext context, AsyncSnapshot<FirebaseUser> userAuthSnapshot) {
         // Si un utilisateur est connecté, le snapshot renvoyé contient un objet FirebaseUser()
         final bool isSignedIn = userAuthSnapshot.hasData;
         if (isSignedIn) {
@@ -47,47 +50,52 @@ class RootPage extends StatelessWidget {
           // Ecoute le Stream témoignant du contenu de la collection "users" de Firestore,
           // c'est à dire les profils utilisateurs étendus ayant été créés par l'application
           return StreamBuilder<QuerySnapshot>(
-              stream: firestore.collection('users').snapshots(),
-              builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> usersDataSnapshot) {
-                // Teste la connexion avec les informations de la collection
-                if (usersDataSnapshot.hasData) {
+            stream: firestore.collection('users').snapshots(),
+            builder: (BuildContext context,
+                AsyncSnapshot<QuerySnapshot> usersDataSnapshot) {
+              // Teste la connexion avec les informations de la collection
+              if (usersDataSnapshot.hasData) {
+                // Teste l'existence de documents dans la collection "users"
+                if (usersDataSnapshot.data.documents.length != 0) {
+                  // On assigne à la variable userDoc l'unique document
+                  // qui a le même id que l'utilisateur
+                  // ou null si aucun document ne répond à ce critère
+                  DocumentSnapshot userDoc =
+                      usersDataSnapshot.data.documents.singleWhere((document) {
+                    return (document.documentID == user.uid);
+                  }, orElse: () => null);
 
-                  // Teste l'existence de documents dans la collection "users"
-                  if(usersDataSnapshot.data.documents.length != 0) {
-                    // On assigne à la variable userDoc l'unique document
-                    // qui a le même id que l'utilisateur
-                    // ou null si aucun document ne répond à ce critère
-                    DocumentSnapshot userDoc = usersDataSnapshot.data.documents.singleWhere((document) {
-                      return (document.documentID == user.uid);
-                    },
-                    orElse: () => null);
-                    
-                    // Si un document est trouvé :
-                    // (1) Change le state de l'application en lui envoyant un StudentUser
-                    //     correspondant à l'utilisateur actif
-                    // (2) Retourne l'ActivityPage()
-                    if (userDoc != null) {
-                      bloc.changeActiveUser(StudentUser.fromFirestoreDocument(userDoc, user));
-                      return ActivityPage();
-                    }
+                  // Si un document est trouvé :
+                  // (1) Change le state de l'application en lui envoyant un StudentUser
+                  //     correspondant à l'utilisateur actif
+                  // (2) Retourne l'ActivityPage()
+                  if (userDoc != null) {
+                    return FutureBuilder(
+                      future: userDoc.data['school'].get(),
+                      builder: (context, schoolSnapshot) {
+                        if (schoolSnapshot.hasData) {
+                          bloc.changeActiveUser(StudentUser.fromFirestoreDocument(userDoc, user, schoolSnapshot.data));
+                          return ActivityPage();
+                        }
+                        return _waitingScreen();
+                      },
+                    );
                   }
-
-                  // Si aucun document n'est trouvé :
-                  // Retourne l'IdScreen()
-                  return IdScreen();
-
                 }
-                // Si la connexion avec la base de données n'est pas effective :
-                // Retourne un écran de chargement _waitingScreen()
-                return _waitingScreen();
-              },
-          );
 
+                // Si aucun document n'est trouvé :
+                // Retourne l'IdScreen()
+                return IdScreen();
+              }
+              // Si la connexion avec la base de données n'est pas effective :
+              // Retourne un écran de chargement _waitingScreen()
+              return _waitingScreen();
+            },
+          );
         }
         // Si aucun utilisateur Firebase n'est connecté
         return HelloPage();
       },
-
     );
   }
 

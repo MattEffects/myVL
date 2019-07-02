@@ -6,9 +6,14 @@ import 'package:flutter/services.dart';
 import 'package:my_vl/src/blocs/auth_provider.dart';
 import 'package:my_vl/src/blocs/bloc_provider.dart';
 import 'package:my_vl/src/blocs/state_bloc.dart';
+import 'package:my_vl/src/pages/profile_pic_page.dart';
 import 'package:my_vl/src/services/authentication.dart';
 import 'package:my_vl/src/mixins/validators.dart';
 import 'package:my_vl/src/models/school_model.dart';
+
+// TODO: Implémenter l'utilisation d'un code unique
+// permettant de vérifier l'identité de l'élève
+// lors de la création du compte
 
 class IdScreen extends StatefulWidget {
   @override
@@ -25,7 +30,7 @@ class _IdScreenState extends State<IdScreen> with Validators {
   // Gère la validation auto des champs du formulaire
   bool _autovalidate = false;
   // Donne une valeur de padding en fonction des dimensions de l'écran
-  var _spacing;
+  double _spacing;
   // Variables nécessaires à la création d'un StudentUser
   // allant être complétées par le formulaire
   String _firstName = '';
@@ -68,7 +73,7 @@ class _IdScreenState extends State<IdScreen> with Validators {
             // Affiche l'écran si des données de Firestore ont été reçues
             if (snapshot.hasData) {
               var schools = snapshot.data.documents.map((school) {
-                return School.fromJson(school);
+                return School.fromFirestoreDocument(school);
               }).toList();
               return Stack(
                 children: <Widget>[
@@ -138,6 +143,12 @@ class _IdScreenState extends State<IdScreen> with Validators {
       FirebaseUser activeFireUser = await auth.currentUser();
       // Informe d'un chargement
       setState(() => _isLoading = true);
+      final url = await _manageProfilePic();
+      print('storage url : $url');
+      print('user url before reload : ${activeFireUser.photoUrl}');
+      await activeFireUser.reload();
+      activeFireUser = await auth.currentUser();
+      print('user url after re-assign : ${activeFireUser.photoUrl}');
       await firestore
           .collection('users')
           .document('${activeFireUser.uid}')
@@ -149,8 +160,7 @@ class _IdScreenState extends State<IdScreen> with Validators {
           'email': activeFireUser.email,
           'isEmailVerified': activeFireUser.isEmailVerified,
           'photoUrl': activeFireUser.photoUrl,
-          'schoolName': _school.name,
-          'schoolId': _school.id,
+          'school': firestore.collection('schools').document('${_school.id}'),
           'classroomName': _classroom.name,
           'level': _level,
           'pathway': _pathway,
@@ -158,8 +168,8 @@ class _IdScreenState extends State<IdScreen> with Validators {
         },
         merge: false,
       );
-      setState(() => _isLoading = false);
-      bloc.activeUserStream.listen((user) => print(user.displayName));
+      // setState(() => _isLoading = false);
+      // bloc.activeUserStream.listen((user) => print(user.displayName));
     }
   }
   
@@ -469,6 +479,28 @@ class _IdScreenState extends State<IdScreen> with Validators {
             ],
           );
         });
+  }
+
+  Future<String> _manageProfilePic() async {
+    String imageUrl = await Navigator.of(context).push(
+      PageRouteBuilder(
+        opaque: true,
+        transitionDuration: Duration(milliseconds: 200),
+        pageBuilder: (context, animation, animation2) {
+          return ProfilePicPage();
+        },
+        transitionsBuilder: (context, animation, animation2, child) {
+          return SlideTransition(
+            position: Tween<Offset>(begin: Offset(1.0, 0.0), end: Offset.zero).animate(animation),
+            child: SlideTransition(
+              position: Tween<Offset>(begin: Offset.zero, end: Offset(1.0, 0.0)).animate(animation2),
+              child: child,
+            ),
+          );
+        },
+      ),
+    );
+    return imageUrl;
   }
 
   // Retourne une zone de texte affichant le message d'erreur actuel

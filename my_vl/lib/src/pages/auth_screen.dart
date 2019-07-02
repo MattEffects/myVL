@@ -16,7 +16,7 @@ class _AuthScreenState extends State<AuthScreen> with Validators {
   bool _autovalidate = false; // Gère la validation auto des champs du formulaire
   bool _obscure = true; // Gère le masquage du mot de passe
   var _formKey = GlobalKey<FormState>(); // Clé référant à notre formulaire
-  var _spacing;
+  double _spacing;
   String _email = '';
   String _password = '';
   String _confirmedPassword = '';

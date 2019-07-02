@@ -10,6 +10,7 @@ abstract class AuthBase {
   Future<String> signUpWithEmailAndPassword(String email, String password);
   Future<FirebaseUser> currentUser();
   Future<String> userName();
+  Future<void> changeUserPhotoUrl(String photoUrl);
   Future<void> signOut();
 }
 
@@ -53,6 +54,14 @@ class Auth implements AuthBase {
       return user.displayName;
     }
     return null;
+  }
+
+  Future<void> changeUserPhotoUrl(String photoUrl) async {
+    await FirebaseAuth.instance.currentUser().then((user) async {
+      UserUpdateInfo updateInfo = UserUpdateInfo();
+      updateInfo.photoUrl = photoUrl;
+      await user.updateProfile(updateInfo);
+    });
   }
 
   Future<void> signOut() async {

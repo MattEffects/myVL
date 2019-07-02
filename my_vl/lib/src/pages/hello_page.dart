@@ -199,7 +199,7 @@ class _HelloPageState extends State<HelloPage>
             alignment: Alignment.center,
             child: FlatButton.icon(
               icon: Icon(Icons.person),
-              label: Text('S\'inscrire'),
+              label: Text('Commencer'),
               textColor: Colors.white,
               // Appelle la fonction _start() pour ouvrir la page AuthScreen()
               onPressed: _start,
