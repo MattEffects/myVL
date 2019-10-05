@@ -11,7 +11,7 @@ class StoryData {
   var time;
 
   StoryData.fromFirestore(DocumentSnapshot doc)
-      : id = doc.data['id'],
+      : id = doc.documentID,
         title = doc.data['title'],
         text = doc.data['text'],
         thumbnailUrl = doc.data['thumbnailUrl'],

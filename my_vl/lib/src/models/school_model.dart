@@ -34,12 +34,12 @@ class School {
       classrooms = _getClassrooms(schoolDocument.data['classes']);
 
   static List<Classroom> _getClassrooms(classroomsList) {
-    List<Classroom> classrooms = [];
+    List<Classroom> parsedClassrooms = [];
     classroomsList.forEach((classroom) {
       final Classroom classroomToAdd = Classroom.fromJson(classroom);
-      classrooms.add(classroomToAdd);
+      parsedClassrooms.add(classroomToAdd);
     });
-    return classrooms;
+    return parsedClassrooms;
   }
 
   String toString() {
@@ -77,12 +77,12 @@ class Classroom {
       students = _getStudents(parsedJson['students']);
 
   static List<Student> _getStudents(studentsList) {
-    List<Student> students = [];
+    List<Student> parsedStudents = [];
     studentsList.forEach((student) {
       final studentToAdd = Student.fromJson(student);
-      students.add(studentToAdd);
+      parsedStudents.add(studentToAdd);
     });
-    return students;
+    return parsedStudents;
   }
 
   String toString() {

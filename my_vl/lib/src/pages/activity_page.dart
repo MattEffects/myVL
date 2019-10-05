@@ -1,14 +1,15 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/services.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:auto_size_text/auto_size_text.dart';
+import 'package:my_vl/src/pages/activity_screens/settings_screen.dart';
+import 'package:my_vl/src/pages/avatar_details_page.dart';
 import 'package:outline_material_icons/outline_material_icons.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:my_vl/src/services/authentication.dart';
 import 'package:my_vl/src/widgets/animated_bottom_bar.dart';
 import 'package:my_vl/src/blocs/auth_provider.dart';
 import 'package:my_vl/src/blocs/bloc_provider.dart';
-import 'package:my_vl/src/blocs/state_bloc.dart';
 import 'package:my_vl/src/models/user_model.dart';
 import 'package:my_vl/src/pages/activity_screens/news_screen.dart';
 import 'package:my_vl/src/pages/activity_screens/poll_screen.dart';
@@ -99,17 +100,6 @@ class _ActivityPageState extends State<ActivityPage> {
     );
   }
 
-  Color _newsColor(ThemeData theme) {
-    switch (theme.brightness) {
-      case Brightness.light:
-        return Colors.indigo[800];
-      case Brightness.dark:
-        return Colors.lightBlue[50];
-      default:
-        return Colors.indigo[800];
-    }
-  }
-
   Color _textColor(ThemeData theme) {
     switch (theme.brightness) {
       case Brightness.light:
@@ -120,10 +110,12 @@ class _ActivityPageState extends State<ActivityPage> {
     return Colors.pink;
   }
   _signOut() async {
+    final AuthBase auth = AuthProvider.of(context).auth;
+    final StateBloc bloc = BlocProvider.of<StateBloc>(context);
     try {
-      final AuthBase auth = AuthProvider.of(context).auth;
       Navigator.of(context).pop();
-      BlocProvider.of<StateBloc>(context).toggleDarkMode(false);
+      bloc.toggleDarkMode(false);
+      bloc.changeActiveUser(null);
       await auth.signOut();
     } catch (e) {
       print(e);
@@ -135,10 +127,6 @@ class _ActivityPageState extends State<ActivityPage> {
   Widget _buildDrawer() {
     // Suivi d'un layout responsive à l'aide du widget MediaQuery
     // qui nous donne des informations sur l'écran de l'utilisateur
-    final StateBloc bloc = BlocProvider.of<StateBloc>(context);
-    final _tilesPadding = EdgeInsets.symmetric(
-      horizontal: MediaQuery.of(context).size.width / 7,
-    );
     return SizedBox(
       width: MediaQuery.of(context).size.width * 3 / 4,
       child: Drawer(
@@ -153,244 +141,264 @@ class _ActivityPageState extends State<ActivityPage> {
             mainAxisSize: MainAxisSize.max,
             children: <Widget>[
               // Partie profil de l'utilisateur, qui écoute le stream de StudentUser
-              StreamBuilder<StudentUser>(
-                stream: bloc.activeUserStream,
-                builder: (context, snapshot) {
-                  return Expanded(
-                    flex: 3,
-                    child: (!snapshot.hasData) 
-                    ? Center(child: CircularProgressIndicator(),)
-                    : Container(
-                      width: double.infinity,
-                      child: Column(
-                        mainAxisSize: MainAxisSize.max,
-                        children: <Widget>[
-                          Expanded(
-                            child: AspectRatio(
-                              aspectRatio: 1.0,
-                              child: StreamBuilder<DocumentSnapshot>(
-                                stream: _firestore.collection('resources').document('images').snapshots(),
-                                builder: (context, snapshot2) {
-                                  if (snapshot2.hasData) {
-                                    String imageUrl = (snapshot.data.photoUrl == null)
-                                    ? snapshot2.data.data['defaultPhotoUrl']
-                                    : snapshot.data.photoUrl;
-                                    return InkWell(
-                                      onTap: () {
-                                        print(imageUrl);
-                                        Navigator.of(context).push(
-                                        PageRouteBuilder(
-                                          opaque: true,
-                                          pageBuilder: (context,_,__) {
-                                            return Container(
-                                              child: GestureDetector(
-                                                onVerticalDragStart: Navigator.of(context).pop,
-                                                onTap: Navigator.of(context).pop,
-                                                child: Hero(
-                                                  tag: 'Avatar',
-                                                  child: CachedNetworkImage(
-                                                    imageUrl: imageUrl,
-                                                    fit: BoxFit.contain,
-                                                    placeholder: (context, url) => CircularProgressIndicator(),
-                                                    errorWidget: (context, url, error) => Icon(Icons.error),
-                                                  ),
-                                                  transitionOnUserGestures: true,
-                                                ),
-                                              ),
-                                            );
-                                          }
-                                        ),
-                                      );},
-                                      child: ClipOval(
-                                        child: Hero(
-                                          tag: 'Avatar',
-                                          child: CachedNetworkImage(
-                                            imageUrl: imageUrl,
-                                            fit: BoxFit.contain,
-                                            placeholder: (context, url) => CircularProgressIndicator(),
-                                            errorWidget: (context, url, error) => Icon(Icons.error),
-                                          ),
-                                          transitionOnUserGestures: true,
-                                        )
-                                      ),
-                                    );
-                                  }
-                                  return CircularProgressIndicator();
-                                }
-                              ),
-                            ),
-                          ),
-                          SizedBox(height: 15.0),
-                          Text(
-                            '${snapshot.data.fullName}',
-                            style: TextStyle(
-                              fontSize: 18.0,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          SizedBox(height: 5.0),
-                          Text(
-                            '${snapshot.data.school.name} - ${snapshot.data.classroomName}',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w300,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                }
-              ),
+              _userInfosZone(),
               SizedBox(
                 height: MediaQuery.of(context).size.height / 40,
               ),
-              Expanded(
-                flex: 6,
-                child: Container(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.max,
-                    children: <Widget>[
-                      ListTile(
-                        contentPadding: _tilesPadding,
-                        leading: Icon(OMIcons.mail),
-                        title: AutoSizeText(
-                          'Messagerie',
-                          presetFontSizes: [18.0, 16.0],
-                          maxLines: 1,
-                          style: TextStyle(
-                            fontWeight: FontWeight.w500,
-                            color: _textColor(Theme.of(context)),
-                          ),
-                        ),
-                        onTap: () {
-                          Navigator.of(context).pop();
-                        },
-                      ),
-                      ListTile(
-                        contentPadding: _tilesPadding,
-                        leading: Icon(Icons.restaurant),
-                        title: AutoSizeText(
-                          'Restauration',
-                          presetFontSizes: [18.0, 16.0],
-                          maxLines: 1,
-                          style: TextStyle(
-                            fontSize: 18.0,
-                            fontWeight: FontWeight.w500,
-                            color: _textColor(Theme.of(context)),
-                          ),
-                        ),
-                        onTap: () {
-                          Navigator.pop(context);
-                        },
-                      ),
-                      ListTile(
-                        contentPadding: _tilesPadding,
-                        leading: Icon(Icons.tune),
-                        title: AutoSizeText(
-                          'Paramètres',
-                          presetFontSizes: [18.0, 16.0],
-                          maxLines: 1,
-                          style: TextStyle(
-                            fontSize: 18.0,
-                            fontWeight: FontWeight.w500,
-                            color: _textColor(Theme.of(context)),
-                          ),
-                        ),
-                        onTap: () {
-                          Navigator.pop(context);
-                        },
-                      ),
-                      ListTile(
-                        contentPadding: _tilesPadding,
-                        leading: Icon(Icons.cancel),
-                        title: AutoSizeText(
-                          'Déconnexion',
-                          presetFontSizes: [18.0, 16.0],
-                          maxLines: 1,
-                          style: TextStyle(
-                            fontSize: 18.0,
-                            fontWeight: FontWeight.w500,
-                            color: _textColor(Theme.of(context)),
-                          ),
-                        ),
-                        onTap: _signOut,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              Expanded(
-                flex: 1,
-                child: Align(
-                  alignment: Alignment.bottomCenter,
-                  child: StreamBuilder<dynamic>(
-                      stream: BlocProvider.of<StateBloc>(context).darkMode,
-                      builder: (context, snapshot) {
-                        if (snapshot.hasData) {
-                          return InkWell(
-                            borderRadius:
-                                BorderRadius.all(Radius.circular(30.0)),
-                            onTap: () {
-                              BlocProvider.of<StateBloc>(context)
-                                  .toggleDarkMode(!snapshot.data);
-                            },
-                            child: AnimatedContainer(
-                              width: 100.0,
-                              height: 40.0,
-                              duration: const Duration(milliseconds: 200),
-                              child: Center(
-                                child: Text(
-                                  snapshot.data ? 'Mode Jour' : 'Mode Nuit',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w400,
-                                    color: snapshot.data
-                                        ? Colors.grey[800]
-                                        : Colors.white,
-                                  ),
-                                ),
-                              ),
-                              decoration: BoxDecoration(
-                                color: snapshot.data
-                                    ? Colors.lightBlue[50]
-                                    : Colors.indigo[800],
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(30.0)),
-                              ),
-                            ),
-                          );
-                        }
-                        return InkWell(
-                          borderRadius: BorderRadius.all(Radius.circular(30.0)),
-                          onTap: () {
-                            BlocProvider.of<StateBloc>(context)
-                                .toggleDarkMode(true);
-                          },
-                          child: AnimatedContainer(
-                            width: 100.0,
-                            height: 40.0,
-                            duration: const Duration(milliseconds: 200),
-                            child: Center(
-                              child: Text(
-                                'Mode Nuit',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w400,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.indigo[800],
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(30.0)),
-                            )
-                          ),
-                        );
-                      }),
-                ),
-              ),
+              _menuTiles(),
+              _darkModeButton(),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _userInfosZone() {
+    final StateBloc bloc = BlocProvider.of<StateBloc>(context);
+    return StreamBuilder<StudentUser>(
+      stream: bloc.activeUserStream,
+      builder: (context, snapshot) {
+        return Expanded(
+          flex: 3,
+          child: (!snapshot.hasData) 
+          ? Center(child: CircularProgressIndicator(),)
+          : Container(
+            width: double.infinity,
+            child: Column(
+              mainAxisSize: MainAxisSize.max,
+              children: <Widget>[
+                Expanded(
+                  child: AspectRatio(
+                    aspectRatio: 1.0,
+                    child: StreamBuilder<DocumentSnapshot>(
+                      stream: _firestore.collection('resources').document('images').snapshots(),
+                      builder: (context, snapshot2) {
+                        if (snapshot2.hasData) {
+                          String imageUrl = (snapshot.data.photoUrl == null)
+                          ? snapshot2.data.data['defaultPhotoUrl']
+                          : snapshot.data.photoUrl;
+                          return InkWell(
+                            onTap: () {
+                              print(imageUrl);
+                              Navigator.of(context).push(
+                              PageRouteBuilder(
+                                opaque: true,
+                                pageBuilder: (context,_,__) {
+                                  return AvatarDetailsPage(
+                                    userId: snapshot.data.id,
+                                    avatarUrl: imageUrl,
+                                  );
+                                }
+                              ),
+                            );},
+                            child: ClipOval(
+                              child: Hero(
+                                tag: 'Avatar',
+                                child: CachedNetworkImage(
+                                  imageUrl: imageUrl,
+                                  fit: BoxFit.contain,
+                                  placeholder: (context, url) => CircularProgressIndicator(),
+                                  errorWidget: (context, url, error) => Icon(Icons.error),
+                                ),
+                                transitionOnUserGestures: true,
+                              )
+                            ),
+                          );
+                        }
+                        return CircularProgressIndicator();
+                      }
+                    ),
+                  ),
+                ),
+                SizedBox(height: 15.0),
+                Text(
+                  '${snapshot.data.fullName}',
+                  style: TextStyle(
+                    fontSize: 18.0,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                SizedBox(height: 5.0),
+                Text(
+                  '${snapshot.data.school.name} - ${snapshot.data.classroomName}',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w300,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      }
+    );
+  }
+
+  Widget _menuTiles() {
+    final _tilesPadding = EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.width / 7);
+    return Expanded(
+      flex: 6,
+      child: Container(
+        child: Column(
+          mainAxisSize: MainAxisSize.max,
+          children: <Widget>[
+            ListTile(
+              contentPadding: _tilesPadding,
+              leading: Icon(OMIcons.mail),
+              title: AutoSizeText(
+                'Messagerie',
+                presetFontSizes: [18.0, 16.0],
+                maxLines: 1,
+                style: TextStyle(
+                  fontWeight: FontWeight.w500,
+                  color: _textColor(Theme.of(context)),
+                ),
+              ),
+              onTap: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            ListTile(
+              contentPadding: _tilesPadding,
+              leading: Icon(Icons.restaurant),
+              title: AutoSizeText(
+                'Restauration',
+                presetFontSizes: [18.0, 16.0],
+                maxLines: 1,
+                style: TextStyle(
+                  fontSize: 18.0,
+                  fontWeight: FontWeight.w500,
+                  color: _textColor(Theme.of(context)),
+                ),
+              ),
+              onTap: () {
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              contentPadding: _tilesPadding,
+              leading: Icon(Icons.tune),
+              title: AutoSizeText(
+                'Paramètres',
+                presetFontSizes: [18.0, 16.0],
+                maxLines: 1,
+                style: TextStyle(
+                  fontSize: 18.0,
+                  fontWeight: FontWeight.w500,
+                  color: _textColor(Theme.of(context)),
+                ),
+              ),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  PageRouteBuilder(
+                    opaque: true,
+                    transitionDuration: Duration(milliseconds: 200),
+                    pageBuilder: (context, animation, animation2) {
+                      return SettingsScreen();
+                    },
+                    transitionsBuilder: (context, animation, animation2, child) {
+                      return SlideTransition(
+                        position: Tween<Offset>(begin: Offset(1.0, 0.0), end: Offset.zero).animate(animation),
+                        child: SlideTransition(
+                          position: Tween<Offset>(begin: Offset.zero, end: Offset(1.0, 0.0)).animate(animation2),
+                          child: child,
+                        ),
+                      );
+                    },
+                  ),
+                );
+              },
+            ),
+            ListTile(
+              contentPadding: _tilesPadding,
+              leading: Icon(Icons.cancel),
+              title: AutoSizeText(
+                'Déconnexion',
+                presetFontSizes: [18.0, 16.0],
+                maxLines: 1,
+                style: TextStyle(
+                  fontSize: 18.0,
+                  fontWeight: FontWeight.w500,
+                  color: _textColor(Theme.of(context)),
+                ),
+              ),
+              onTap: _signOut,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _darkModeButton() {
+    return Expanded(
+      flex: 1,
+      child: Align(
+        alignment: Alignment.bottomCenter,
+        child: StreamBuilder<dynamic>(
+            stream: BlocProvider.of<StateBloc>(context).darkMode,
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                return InkWell(
+                  borderRadius:
+                      BorderRadius.all(Radius.circular(30.0)),
+                  onTap: () {
+                    BlocProvider.of<StateBloc>(context)
+                        .toggleDarkMode(!snapshot.data);
+                  },
+                  child: AnimatedContainer(
+                    width: 100.0,
+                    height: 40.0,
+                    duration: const Duration(milliseconds: 200),
+                    child: Center(
+                      child: Text(
+                        snapshot.data ? 'Mode Jour' : 'Mode Nuit',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w400,
+                          color: snapshot.data
+                              ? Colors.grey[800]
+                              : Colors.white,
+                        ),
+                      ),
+                    ),
+                    decoration: BoxDecoration(
+                      color: snapshot.data
+                          ? Colors.lightBlue[50]
+                          : Colors.indigo[800],
+                      borderRadius:
+                          BorderRadius.all(Radius.circular(30.0)),
+                    ),
+                  ),
+                );
+              }
+              return InkWell(
+                borderRadius: BorderRadius.all(Radius.circular(30.0)),
+                onTap: () {
+                  BlocProvider.of<StateBloc>(context)
+                      .toggleDarkMode(true);
+                },
+                child: AnimatedContainer(
+                  width: 100.0,
+                  height: 40.0,
+                  duration: const Duration(milliseconds: 200),
+                  child: Center(
+                    child: Text(
+                      'Mode Nuit',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w400,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.indigo[800],
+                    borderRadius:
+                        BorderRadius.all(Radius.circular(30.0)),
+                  )
+                ),
+              );
+            }),
       ),
     );
   }

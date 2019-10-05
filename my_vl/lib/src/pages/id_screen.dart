@@ -4,9 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
 import 'package:my_vl/src/blocs/auth_provider.dart';
-import 'package:my_vl/src/blocs/bloc_provider.dart';
-import 'package:my_vl/src/blocs/state_bloc.dart';
-import 'package:my_vl/src/pages/profile_pic_page.dart';
+import 'package:my_vl/src/pages/avatar_picker_page.dart';
 import 'package:my_vl/src/services/authentication.dart';
 import 'package:my_vl/src/mixins/validators.dart';
 import 'package:my_vl/src/models/school_model.dart';
@@ -133,7 +131,6 @@ class _IdScreenState extends State<IdScreen> with Validators {
   // (Appelée par le _submitButton du formulaire)
   void _submit() async {
     final AuthBase auth = AuthProvider.of(context).auth;
-    final StateBloc bloc = BlocProvider.of<StateBloc>(context);
     // Appelle _validateAndSave() pour valider le formulaire
     if (_validateAndSave()) {
       setState(() {
@@ -487,7 +484,7 @@ class _IdScreenState extends State<IdScreen> with Validators {
         opaque: true,
         transitionDuration: Duration(milliseconds: 200),
         pageBuilder: (context, animation, animation2) {
-          return ProfilePicPage();
+          return AvatarPickerPage();
         },
         transitionsBuilder: (context, animation, animation2, child) {
           return SlideTransition(

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:my_vl/src/pages/activity_page.dart';
@@ -85,15 +84,18 @@ class RootPage extends StatelessWidget {
 
                 // Si aucun document n'est trouvé :
                 // Retourne l'IdScreen()
+                bloc.toggleDarkMode(false);
                 return IdScreen();
               }
               // Si la connexion avec la base de données n'est pas effective :
               // Retourne un écran de chargement _waitingScreen()
+              bloc.toggleDarkMode(false);
               return _waitingScreen();
             },
           );
         }
         // Si aucun utilisateur Firebase n'est connecté
+        bloc.toggleDarkMode(false);
         return HelloPage();
       },
     );

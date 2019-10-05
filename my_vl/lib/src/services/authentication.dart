@@ -1,6 +1,4 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:my_vl/src/models/user_model.dart';
 
 // On crée la classe abstraite BaseAuth
 // Qui définit les attributs nécessaires à une classe d'authentification
@@ -20,7 +18,6 @@ abstract class AuthBase {
 class Auth implements AuthBase {
   // Création d'une instance utilisable de FirebaseAuth
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
-  final Firestore _firestore = Firestore.instance;
 
   Stream<FirebaseUser> get onAuthStateChanged {
     return _firebaseAuth.onAuthStateChanged
@@ -67,4 +64,6 @@ class Auth implements AuthBase {
   Future<void> signOut() async {
     return _firebaseAuth.signOut();
   }
+
+  // TODO: Implémenter ici une fonction de suppression de l'utilisateur
 }

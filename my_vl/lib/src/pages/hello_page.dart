@@ -201,6 +201,8 @@ class _HelloPageState extends State<HelloPage>
               icon: Icon(Icons.person),
               label: Text('Commencer'),
               textColor: Colors.white,
+              splashColor: Colors.transparent,
+              highlightColor: Colors.transparent,
               // Appelle la fonction _start() pour ouvrir la page AuthScreen()
               onPressed: _start,
             ),

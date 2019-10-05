@@ -140,6 +140,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
         if (value.isEmpty) {
           return 'Merci de renseigner un titre';
         }
+        return null;
       },
       onSaved: (value) => title = value,
     );
@@ -159,6 +160,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
         if (value.isEmpty) {
           return 'Votre message ne peut pas être vide';
         }
+        return null;
       },
       onSaved: (value) => message = value,
     );
@@ -169,17 +171,17 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
       children: <Widget>[
         Checkbox(
             activeColor: Theme.of(context).primaryColor,
-            onChanged: (bool e) => something(),
+            onChanged: (bool e) => _toggleCheckboxState(),
             value: checkBoxState),
         GestureDetector(
           child: Text(t),
-          onTap: something,
+          onTap: _toggleCheckboxState,
         ),
       ],
     );
   }
 
-  void something() {
+  void _toggleCheckboxState() {
     setState(() {
       if (checkBoxState) {
         t = "Vous n'êtes pas anonyme";

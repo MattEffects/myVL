@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:math';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -8,16 +7,20 @@ import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:my_vl/src/blocs/auth_provider.dart';
+import 'package:my_vl/src/blocs/bloc_provider.dart';
+import 'package:my_vl/src/blocs/state_bloc.dart';
+import 'package:my_vl/src/models/user_model.dart';
 import 'package:my_vl/src/services/authentication.dart';
 
-class ProfilePicPage extends StatefulWidget {
+class AvatarPickerPage extends StatefulWidget {
   @override
-  _ProfilePicPageState createState() => _ProfilePicPageState();
+  _AvatarPickerPageState createState() => _AvatarPickerPageState();
 }
 
-class _ProfilePicPageState extends State<ProfilePicPage> {
+class _AvatarPickerPageState extends State<AvatarPickerPage> {
   bool _isLoading = false;
-  File _image;
+  File _imageFile;
+  Image _image;
   Firestore _firestore = Firestore.instance;
   ImagePicker imagePicker;
   // Donne une valeur de padding en fonction des dimensions de l'écran
@@ -33,13 +36,16 @@ class _ProfilePicPageState extends State<ProfilePicPage> {
       appBar: AppBar(
         title: Text(
           'Choisir une photo de profil',
-          style: TextStyle(color: Theme.of(context).primaryColor),
+          style: TextStyle(color: Theme.of(context).brightness == Brightness.dark
+            ? Colors.white
+            : Theme.of(context).primaryColor),
         ),
         centerTitle: true,
         backgroundColor: Theme.of(context).canvasColor,
         elevation: 0,
-        iconTheme: IconTheme.of(context)
-            .copyWith(color: Theme.of(context).primaryColor),
+        iconTheme: Theme.of(context).brightness == Brightness.dark
+          ? IconTheme.of(context).copyWith(color: Colors.white)
+          : IconTheme.of(context).copyWith(color: Theme.of(context).primaryColor),
       ),
       // Lien du rendu de l'écran d'identification avec les données de Firestore
       // A chaque modification des données de la collection 'school',
@@ -69,7 +75,7 @@ class _ProfilePicPageState extends State<ProfilePicPage> {
             _showProfilePicture(),
             SizedBox(height: _spacing * 4),
             _photoButtons(),
-            _image != null ? _deleteButton() : SizedBox(),
+            _imageFile != null ? _deleteButton() : SizedBox(),
             Expanded(child: Container()),
             Align(
               alignment: Alignment.bottomRight,
@@ -82,7 +88,7 @@ class _ProfilePicPageState extends State<ProfilePicPage> {
   }
 
   Future<void> _submitPhotoUrl() async {
-    final File image = _image;
+    final File image = _imageFile;
     if (image == null) {
       Navigator.pop(context, null);
     }
@@ -127,8 +133,8 @@ class _ProfilePicPageState extends State<ProfilePicPage> {
       minWidth: 512,
     );
     setState(() {
-      _image = compressedImage;
-      print(_image.lengthSync());
+      _imageFile = compressedImage;
+      print(_imageFile.lengthSync());
     });
   }
 
@@ -220,18 +226,18 @@ class _ProfilePicPageState extends State<ProfilePicPage> {
       highlightElevation: 0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
       // Quand appuyé, éxécute la fonction _cancel()
-      onPressed: () => setState(() => _image = null),
+      onPressed: () => setState(() => _imageFile = null),
     );
   }
 
   Widget _nextButton() {
     return MaterialButton(
       child: Text(
-        _image != null
+        _imageFile != null
          ? 'Continuer'
          : 'Passer',
         style: TextStyle(
-          color: _image != null
+          color: _imageFile != null
             ? Theme.of(context).primaryColor
             : Theme.of(context).disabledColor,
         ),
@@ -247,28 +253,35 @@ class _ProfilePicPageState extends State<ProfilePicPage> {
     );
   }
 
-  // Retourne le logo
-  // (Appelée par _showBody())
   Widget _showProfilePicture() {
+    StateBloc bloc = BlocProvider.of<StateBloc>(context);
     return ClipOval(
       child: Container(
         height: MediaQuery.of(context).size.width / 2,
         width: MediaQuery.of(context).size.width / 2,
-        child: _image == null
-            ? StreamBuilder(
-                stream: _firestore
-                    .collection('resources')
-                    .document('images')
-                    .snapshots(),
-                builder: (context, snapshot) {
-                  if (!snapshot.hasData) {
-                    return Center(child: CircularProgressIndicator());
-                  }
-                  return Image.network(snapshot.data.data['defaultPhotoUrl']);
-                },
-              )
+        child: _imageFile == null
+            ? StreamBuilder<StudentUser>(
+              stream: bloc.activeUserStream,
+              builder: (BuildContext context, AsyncSnapshot<StudentUser> userSnapshot) {
+                if(userSnapshot.hasData && (userSnapshot.data?.photoUrl != null)) {
+                  return Image.network(userSnapshot.data.photoUrl);
+                }
+                return StreamBuilder(
+                  stream: _firestore
+                      .collection('resources')
+                      .document('images')
+                      .snapshots(),
+                  builder: (context, firestoreSnapshot) {
+                    if (!firestoreSnapshot.hasData) {
+                      return Center(child: CircularProgressIndicator());
+                    }
+                    return Image.network(firestoreSnapshot.data.data['defaultPhotoUrl']);
+                  },
+                );
+              },
+            )
             : Image.file(
-                _image,
+                _imageFile,
                 fit: BoxFit.cover,
               ),
       ),
